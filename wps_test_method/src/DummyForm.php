@@ -4,7 +4,7 @@ namespace Drupal\wps_test_method;
 
 class DummyForm implements \Drupal\payment_forms\PaymentFormInterface {
 
-  public function form(array &$element, array &$form_state, \Payment $payment) {
+  public function form(array $element, array &$form_state, \Payment $payment) {
     $method = $payment->method;
     $settings['wps_test_method'][$method->pmid] = true;
     drupal_add_js($settings, 'setting');
@@ -49,9 +49,11 @@ class DummyForm implements \Drupal\payment_forms\PaymentFormInterface {
       '#title' => 'Redirect',
       '#description' => 'Simulate a payment method that needs to redirect the user to an external page.',
     );
+
+    return $element;
   }
 
-  public function validate(array &$element, array &$form_state, \Payment $payment) {
+  public function validate(array $element, array &$form_state, \Payment $payment) {
     $values =& $form_state['values'];
     foreach ($element['#parents'] as $key) {
       $values =& $values[$key];
