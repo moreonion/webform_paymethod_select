@@ -26,7 +26,7 @@ before_script:
   - ln -s $repo $root/sites/all/modules/webform_paymethod_select
   - cd $root
   - drush dl ctools currency entity jquery_update little_helpers-2.0-alpha3 payment payment_context psr0 views webform
-  - drush --yes pm-enable webform_paymethod_select
+  - drush --yes pm-enable webform_paymethod_select wps_test_method
 
 script:
   - cd $repo
