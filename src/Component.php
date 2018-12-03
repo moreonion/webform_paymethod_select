@@ -341,7 +341,7 @@ class Component {
       [
         ':nid' => $node->nid,
         ':cid' => $this->component['cid'],
-        ':sid' => $submission->unwrap()->sid,
+        ':sid' => $submission->sid,
         ':pid' => $payment->pid,
       ]
     );

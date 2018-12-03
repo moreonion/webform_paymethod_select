@@ -16,7 +16,6 @@ function webform_paymethod_select_continue($submission, $page_num) {
   $form_state = array();
 
   $node = $submission->node;
-  $submission = $submission->unwrap();
   $submission->highest_valid_page = $page_num - 1;
   $form_state['build_info']['args'] = [$node, $submission, FALSE, TRUE];
   // Needed to accomodate little_helpers.

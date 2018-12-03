@@ -79,8 +79,7 @@ class WebformPaymentContext implements PaymentContextInterface {
    *   An with two values corresponding to the two arguments of url().
    */
   protected function getSuccessRedirect() {
-    $submission = $this->submission->unwrap();
-    $redirect = $this->submission->webform->getRedirect($submission);
+    $redirect = $this->submission->webform->getRedirect($this->submission);
     drupal_alter('webform_paymethod_select_redirect', $redirect, $this->submission);
     return is_array($redirect) ? $redirect : [$redirect, []];
   }
@@ -132,8 +131,8 @@ class WebformPaymentContext implements PaymentContextInterface {
 
   protected function finishWebform() {
     require_once drupal_get_path('module', 'webform') . '/includes/webform.submissions.inc';
-    $node = $this->submission->webform->node;
-    $submission = $this->submission->unwrap();
+    $submission = $this->submission;
+    $node = $submission->webform->node;
     $submission->is_draft = FALSE;
     webform_submission_update($node, $submission);
     webform_submission_send_mail($node, $submission);
