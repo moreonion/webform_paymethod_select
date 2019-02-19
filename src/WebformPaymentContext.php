@@ -130,12 +130,9 @@ class WebformPaymentContext implements PaymentContextInterface {
   }
 
   protected function finishWebform() {
-    require_once drupal_get_path('module', 'webform') . '/includes/webform.submissions.inc';
-    $submission = $this->submission;
-    $node = $submission->webform->node;
-    $submission->is_draft = FALSE;
-    webform_submission_update($node, $submission);
-    webform_submission_send_mail($node, $submission);
+    $this->submission->is_draft = FALSE;
+    $this->submission->save();
+    $this->submission->sendEmails();
     $redirect = $this->getSuccessRedirect();
     $this->redirect($redirect[0], $redirect[1]);
   }
