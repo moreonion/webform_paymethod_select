@@ -10,6 +10,12 @@ use Drupal\little_helpers\Webform\Submission;
  */
 class PaymentFactory {
 
+  const DONATION_INTERVAL_MAP = [
+    'm' => ['interval_unit' => 'monthly', 'interval_value' => 1],
+    'q' => ['interval_unit' => 'monthly', 'interval_value' => 3],
+    'y' => ['interval_unit' => 'yearly', 'interval_value' => 1],
+  ];
+
   protected $component;
 
   /**
@@ -37,6 +43,15 @@ class PaymentFactory {
       $payment->currency_code = $submission->valueByCid($extra['currency_code_component']);
     }
 
+    // Set recurrence based on the donation_interval component (legacy).
+    $recurrence = NULL;
+    if ($value = $submission->valueByKey('donation_interval')) {
+      $map = static::DONATION_INTERVAL_MAP;
+      if (isset($map[$value])) {
+        $recurrence = $map[$value];
+      }
+    }
+
     // Set the payment up for a (possibly repeated) payment attempt.
     // Handle setting the amount value in line items that were configured to
     // read their amount from a component.
@@ -50,6 +65,7 @@ class PaymentFactory {
         $quantity = $submission->valueByCid($line_item->quantity_component);
         $line_item->quantity = (int) $quantity;
       }
+      $line_item->recurrence = $recurrence;
       $payment->setLineItem($line_item);
     }
   }
