@@ -87,7 +87,7 @@ class PaymentFactory {
       'tax_rate' => 'tax_rate',
       'recurrence' => [
         'interval_unit' => 'recurrence__interval_unit',
-        'interval_vallue' => 'recurrence__interval_value',
+        'interval_value' => 'recurrence__interval_value',
         'day_of_month' => 'recurrence__day_of_month',
         'month' => 'recurrence__month',
         'start_data' => 'recurrence__start_date',
@@ -107,7 +107,7 @@ class PaymentFactory {
           $q[] = [$key, $obj->$attr];
         }
         else {
-          $value = $submission->valueByKey($key);
+          $value = $submission->valueByKey($prefix . $key);
           if (isset($value)) {
             $obj->$attr = $value;
           }
