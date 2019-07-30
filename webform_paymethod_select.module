@@ -79,17 +79,20 @@ function webform_paymethod_select_theme() {
  * Implements hook_webform_component_info().
  */
 function webform_paymethod_select_webform_component_info() {
-  $components['paymethod_select'] = array(
-    'label'       => t('Payment Selector'),
+  $components['paymethod_select'] = [
+    'label' => t('Payment Selector'),
     'description' => t('Provides a selectable list of payment methods for a webform.'),
-    'features'    => array(
+    'features' => [
+      'analysis' => FALSE,
+      'csv' => FALSE,
+      'conditional' => FALSE,
       'default_value' => FALSE,
-      'required'      => TRUE,
-      'csv'           => FALSE,
-    ),
+      'email_name' => FALSE,
+      'required' => TRUE,
+      'title_inline' => FALSE,
+    ],
     'file' => 'webform_paymethod_select.webform.inc',
-  );
-
+  ];
   return $components;
 }
 
