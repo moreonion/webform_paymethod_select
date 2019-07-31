@@ -160,7 +160,7 @@ function webform_paymethod_select_element_validate_line_item(array $element, arr
       $v = $data['quantity']['value'];
       // They're not all empty, so make sure they all contain input.
       if ((int) $v == $v && $v >= 0) {
-        $data['quantity'] = (int) $data['quantity'];
+        $data['quantity'] = (int) $v;
       } else {
         $elem = &$element[$container]['quantity']['value'];
         form_error($elem, t('Quantity needs to be a non-negative number.'));
