@@ -130,7 +130,6 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         '#states'        => array(
           'visible' => array(".$radio_quantity" => array('value' => 'component')),
         ),
-        '#weight' => -2,
       ) + _webform_paymethod_select_other_component_selector($form, $form_state);
     }
   }
