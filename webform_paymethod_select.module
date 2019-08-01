@@ -13,7 +13,7 @@ use \Drupal\form_builder\Loader as FBLoader;
 
 if (module_exists('form_builder_webform') == TRUE) {
   require_once dirname(__FILE__) . '/webform_paymethod_select.form_builder.inc';
-  require_once drupal_get_path('module', 'form_builder') . '/includes/form_builder.properties.inc';
+  module_load_include('inc', 'form_builder', 'includes/form_builder.properties');
 }
 require_once dirname(__FILE__) . '/webform_paymethod_select.line_item.inc';
 require_once dirname(__FILE__) . '/webform_paymethod_select.webform.inc';
@@ -79,17 +79,20 @@ function webform_paymethod_select_theme() {
  * Implements hook_webform_component_info().
  */
 function webform_paymethod_select_webform_component_info() {
-  $components['paymethod_select'] = array(
-    'label'       => t('Payment Selector'),
+  $components['paymethod_select'] = [
+    'label' => t('Payment Selector'),
     'description' => t('Provides a selectable list of payment methods for a webform.'),
-    'features'    => array(
+    'features' => [
+      'analysis' => FALSE,
+      'csv' => FALSE,
+      'conditional' => FALSE,
       'default_value' => FALSE,
-      'required'      => TRUE,
-      'csv'           => FALSE,
-    ),
+      'email_name' => FALSE,
+      'required' => TRUE,
+      'title_inline' => FALSE,
+    ],
     'file' => 'webform_paymethod_select.webform.inc',
-  );
-
+  ];
   return $components;
 }
 

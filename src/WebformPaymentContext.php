@@ -73,18 +73,6 @@ class WebformPaymentContext implements PaymentContextInterface {
   }
 
   /**
-   * Determine where to redirect after the form has been completed.
-   *
-   * @return array
-   *   An with two values corresponding to the two arguments of url().
-   */
-  protected function getSuccessRedirect() {
-    $redirect = $this->submission->webform->getRedirect($this->submission);
-    drupal_alter('webform_paymethod_select_redirect', $redirect, $this->submission);
-    return is_array($redirect) ? $redirect : [$redirect, []];
-  }
-
-  /**
    * Return a path that can be used to re-enter the form if the payment failed.
    *
    * @return a link array
@@ -133,7 +121,7 @@ class WebformPaymentContext implements PaymentContextInterface {
     $this->submission->is_draft = FALSE;
     $this->submission->save();
     $this->submission->sendEmails();
-    $redirect = $this->getSuccessRedirect();
+    $redirect = $this->submission->webform->getRedirect($this->submission);
     $this->redirect($redirect[0], $redirect[1]);
   }
 
