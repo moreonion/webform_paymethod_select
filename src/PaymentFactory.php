@@ -4,7 +4,6 @@ namespace Drupal\webform_paymethod_select;
 
 use Drupal\little_helpers\Webform\Submission;
 
-
 /**
  * Updates payment objects based on the component configuration and submission.
  */
@@ -32,7 +31,7 @@ class PaymentFactory {
    * Update a payment according to submission and component data.
    *
    * @param \Payment $payment
-   *   The payment to update
+   *   The payment to update.
    * @param \Drupal\little_helpers\Webform\Submission $submission
    *   The submission data.
    */
@@ -76,7 +75,7 @@ class PaymentFactory {
   }
 
   /**
-   * Read line item data from a pre-defined
+   * Read line item data from components with pre-defined form keys.
    */
   protected function lineItemFromKeys(\PaymentLineItem $line_item, $index, Submission $submission) {
     $cast_float = function ($v) {
@@ -97,8 +96,14 @@ class PaymentFactory {
       'description' => ['description', $cast_string],
       'tax_rate' => ['tax_rate', $cast_float],
       'recurrence.interval_unit' => ['recurrence__interval_unit', $cast_string],
-      'recurrence.interval_value' => ['recurrence__interval_value', $cast_int_factory(1)],
-      'recurrence.day_of_month' => ['recurrence__day_of_month', $cast_int_factory(-31, 31)],
+      'recurrence.interval_value' => [
+        'recurrence__interval_value',
+        $cast_int_factory(1),
+      ],
+      'recurrence.day_of_month' => [
+        'recurrence__day_of_month',
+        $cast_int_factory(-31, 31),
+      ],
       'recurrence.month' => ['recurrence__month', $cast_int_factory(1, 12)],
       'recurrence.start_data' => ['recurrence__start_date', $cast_string],
       'recurrence.count' => ['recurrence__count', $cast_int_factory(0)],
