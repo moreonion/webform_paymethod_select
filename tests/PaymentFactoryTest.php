@@ -119,4 +119,33 @@ class PaymentFactoryTest extends DrupalUnitTestCase {
     ], (array) $payment->line_items['first_item']->recurrence);
   }
 
+  /**
+   * Test reading data from keys ignores empty and invalid values.
+   */
+  public function testReadInvalidValues() {
+    $component['extra'] = [
+      'currency_code_source' => 'fixed',
+      'currency_code' => 'EUR',
+      'line_items' => [
+        new PaymethodLineItem([
+          'name' => 'first_item',
+          'description' => 'First item',
+        ]),
+      ],
+    ];
+    $factory = new PaymentFactory($component);
+    $payment = entity_create('payment', []);
+    $submission = $this->createMock(Submission::class);
+    $key_values['payment__item1__amount'] = '5not a number3';
+    $key_values['payment__item1__quantity'] = '-3';
+    $key_values['payment__item1__recurrence__interval_unit'] = 'monthly';
+    $key_values['payment__item1__recurrence__interval_value'] = '-1';
+    $key_values['payment__item1__recurrence__day_of_month'] = '';
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertEqual(0.0, $payment->totalAmount(TRUE));
+    $this->assertEqual([
+      'interval_unit' => 'monthly',
+    ], (array) $payment->line_items['first_item']->recurrence);
+  }
+
 }

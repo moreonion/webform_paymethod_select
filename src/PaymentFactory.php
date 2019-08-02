@@ -79,44 +79,70 @@ class PaymentFactory {
    * Read line item data from a pre-defined
    */
   protected function lineItemFromKeys(\PaymentLineItem $line_item, $index, Submission $submission) {
-    $prefix = "payment__item{$index}__";
+    $cast_float = function ($v) {
+      return is_numeric($v) ? (float) $v : NULL;
+    };
+    $cast_string = function ($v) {
+      return $v ? $v : NULL;
+    };
+    $cast_int_factory = function ($min = NULL, $max = NULL) {
+      return function ($v) use ($min, $max) {
+        $i = (int) $v;
+        return $i == $v && (is_null($min) || $i >= $min) && (is_null($max) || $i <= $max) ? $i : NULL;
+      };
+    };
     $map = [
-      'amount' => 'amount',
-      'quantity' => 'quantity',
-      'description' => 'description',
-      'tax_rate' => 'tax_rate',
-      'recurrence' => [
-        'interval_unit' => 'recurrence__interval_unit',
-        'interval_value' => 'recurrence__interval_value',
-        'day_of_month' => 'recurrence__day_of_month',
-        'month' => 'recurrence__month',
-        'start_data' => 'recurrence__start_date',
-        'count' => 'recurrence__count',
-      ],
+      'amount' => ['amount', $cast_float],
+      'quantity' => ['quantity', $cast_int_factory(0)],
+      'description' => ['description', $cast_string],
+      'tax_rate' => ['tax_rate', $cast_float],
+      'recurrence.interval_unit' => ['recurrence__interval_unit', $cast_string],
+      'recurrence.interval_value' => ['recurrence__interval_value', $cast_int_factory(1)],
+      'recurrence.day_of_month' => ['recurrence__day_of_month', $cast_int_factory(-31, 31)],
+      'recurrence.month' => ['recurrence__month', $cast_int_factory(1, 12)],
+      'recurrence.start_data' => ['recurrence__start_date', $cast_string],
+      'recurrence.count' => ['recurrence__count', $cast_int_factory(0)],
     ];
-    $q = [[$map, $line_item]];
 
-    // Recursively fill the object.
-    while ($item = array_shift($q)) {
-      list($m, $obj) = $item;
-      foreach ($m as $attr => $key) {
-        if (is_array($key)) {
-          if (!isset($obj->$attr)) {
-            $obj->$attr = (object) [];
-          }
-          $q[] = [$key, $obj->$attr];
-        }
-        else {
-          $value = $submission->valueByKey($prefix . $key);
-          if (isset($value)) {
-            $obj->$attr = $value;
-          }
-        }
+    $prefix = "payment__item{$index}__";
+    foreach ($map as $target => $m) {
+      list($form_key, $cast_fn) = $m;
+      if (!($value = $submission->valueByKey($prefix . $form_key))) {
+        // Never set empty values. They could be the result of a conditionally
+        // hidden component.
+        continue;
+      }
+      $value = $cast_fn($value);
+      if (isset($value)) {
+        static::objDeepSet($line_item, explode('.', $target), $value);
       }
     }
 
     if (empty($line_item->recurrence->interval_unit)) {
       $line_item->recurrence = NULL;
+    }
+  }
+
+  /**
+   * Set a value based on keys in a nested obj data structure.
+   *
+   * @param object $obj
+   *   Object which’s property should be set.
+   * @param string[] $keys
+   *   Array of property names.
+   * @param mixed $value
+   *   The property is set to this value.
+   */
+  protected static function objDeepSet($obj, array $keys, $value) {
+    $key = array_shift($keys);
+    if ($keys) {
+      if (!isset($obj->$key)) {
+        $obj->$key = (object) [];
+      }
+      static::objDeepSet($obj->$key, $keys, $value);
+    }
+    else {
+      $obj->$key = $value;
     }
   }
 
