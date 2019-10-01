@@ -122,7 +122,7 @@ function webform_paymethod_select_component_element_validate(array $element, arr
 /**
  * Helper function to get the current node object
  */
-function webform_paymethod_select_get_node(&$form = NULL, &$form_state = NULL) {
+function webform_paymethod_select_get_node(array $form, array $form_state) {
   static $node = NULL;
 
   if ($node == NULL) {

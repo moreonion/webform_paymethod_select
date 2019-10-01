@@ -9,6 +9,6 @@ dependencies[] = little_helpers (>=2.0-alpha3)
 dependencies[] = payment (>1.5)
 dependencies[] = payment_context
 dependencies[] = psr0
-dependencies[] = webform (>=4.11)
+dependencies[] = webform (>=4.17)
 
 stylesheets[all][] = webform_paymethod_select.css

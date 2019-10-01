@@ -3,6 +3,8 @@
  * @file
  */
 
+use Drupal\webform_paymethod_select\PaymethodLineItem;
+
 /**
  * Implements hook_element_info_alter().
  */
@@ -29,7 +31,7 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         $defaults = $element['#default_value'][$index];
       }
       else {
-        $defaults = new Drupal\webform_paymethod_select\PaymethodLineItem(array(
+        $defaults = new PaymethodLineItem(array(
           'amount' => '',
           'amount_source' => 'fixed',
           'quantity' => 1,
@@ -130,7 +132,6 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         '#states'        => array(
           'visible' => array(".$radio_quantity" => array('value' => 'component')),
         ),
-        '#weight' => -2,
       ) + _webform_paymethod_select_other_component_selector($form, $form_state);
     }
   }
@@ -141,68 +142,65 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
  * Callback function set in hook_element_info_alter() hook
  */
 function webform_paymethod_select_element_validate_line_item(array $element, array &$form_state) {
-
-  $values = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
-
-  // Don't let the submit button's value be validated.
-  unset($values['add_more']);
-  $line_items = array();
-
-  foreach ($values as $container => $data) {
+  $line_items = [];
+  foreach (element_children($element) as $key) {
+    $container = $element[$key];
 
     // Skip empty line items
-    if (empty($data['quantity']['amount']) && empty($data['tax_rate']) && empty($data['description'])) {
+    if (empty($container['tax_rate']['#value']) && empty($container['description']['#value'])) {
       continue;
     }
 
-    $data['quantity_source'] = $data['quantity']['source'];
+    $data['quantity_source'] = $container['quantity']['source']['#value'];
     $data['quantity_component'] = NULL;
-    if ($data['quantity']['source'] == 'fixed') {
-      $v = $data['quantity']['value'];
+    if ($data['quantity_source'] == 'fixed') {
+      $v = $container['quantity']['value']['#value'];
       // They're not all empty, so make sure they all contain input.
       if ((int) $v == $v && $v >= 0) {
-        $data['quantity'] = (int) $data['quantity'];
-      } else {
-        $elem = &$element[$container]['quantity']['value'];
-        form_error($elem, t('Quantity needs to be a non-negative number.'));
+        $data['quantity'] = (int) $v;
+      }
+      else {
+        form_error($container['quantity']['value'], t('Quantity needs to be a non-negative number.'));
       }
     }
     else {
-      $data['quantity_component'] = $data['quantity']['component'];
+      $data['quantity_component'] = $container['quantity']['component']['#value'];
       $data['quantity'] = NULL;
     }
 
-    if (is_numeric($data['tax_rate']) || $data['tax_rate'] >= 0) {
-      $data['tax_rate'] = (float) $data['tax_rate'] / 100;
+    $v = $container['tax_rate']['#value'];
+    if (is_numeric($v) || $v >= 0) {
+      $data['tax_rate'] = (float) $v / 100;
     }
     else {
-      $elem = &$element[$container]['tax_rate'];
-      form_error($elem, 'Tax rate must be a positive percentage.');
+      form_error($container['tax_rate'], 'Tax rate must be a positive percentage.');
     }
 
-    if (empty($data['description'])) {
-      $elem = &$element[$container]['description'];
-      form_error($elem, t('The line item description must not be empty.'));
+    if (empty($container['description']['#value'])) {
+      form_error($container['description'], t('The line item description must not be empty.'));
     }
+    else {
+      $data['description'] = $container['description']['#value'];
+    }
+    $data['name'] = $container['name']['#value'];
 
-    $data['amount_source'] = $data['amount']['source'];
+    $data['amount_source'] = $container['amount']['source']['#value'];
     $data['amount_component'] = NULL;
-    if ($data['amount']['source'] == 'fixed') {
-      $v = $data['amount']['value'];
+    if ($data['amount_source'] == 'fixed') {
+      $v = $container['amount']['value']['#value'];
       if (is_numeric($v) && $v >= 0) {
         $data['amount'] = (float) $v;
       }
       else {
-        $elem = &$element[$container]['amount']['value'];
-        form_error($elem, 'Amount must be a positive number or 0.');
+        form_error($container['amount']['value'], 'Amount must be a positive number or 0.');
       }
     } else {
-      $data['amount_component'] = $data['amount']['component'];
+      $data['amount_component'] = $container['amount']['component']['#value'];
       $data['amount'] = NULL;
     }
 
     // Convert the raw input to a PaymentLineItem object.
-    $line_items[] = new \Drupal\webform_paymethod_select\PaymethodLineItem($data);
+    $line_items[] = new PaymethodLineItem($data);
   }
   form_set_value($element, $line_items, $form_state);
 }

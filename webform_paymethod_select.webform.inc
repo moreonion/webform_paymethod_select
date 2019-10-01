@@ -75,8 +75,7 @@ function _webform_paymethod_select_currency_options() {
 /**
  * Implements _webform_edit_[component]().
  */
-function _webform_edit_paymethod_select($component) {
-
+function _webform_edit_paymethod_select(array $component, array $original_form, array $form_state_copy) {
   $settings = drupal_array_merge_deep(
     array(
       'payment_description'      => 'Default Payment',
@@ -136,7 +135,6 @@ function _webform_edit_paymethod_select($component) {
     ),
   );
 
-  $fs = array();
   $form['extra']['currency_code']['component'] = array(
     '#default_value' => $settings['currency_code_component'],
     '#states' => array(
@@ -145,7 +143,7 @@ function _webform_edit_paymethod_select($component) {
     '#wrapper_attributes' => array(
       'class' => array('webform-paymethod-select-component-or-value-option'),
     ),
-  ) + _webform_paymethod_select_other_component_selector($form, $fs);
+  ) + _webform_paymethod_select_other_component_selector($original_form, $form_state_copy);
 
   $form['extra']['line_items'] = array(
     '#type' => 'fieldset',
@@ -184,7 +182,7 @@ function _webform_paymethod_select_currency_values($element, &$form_state, $form
  * @return array
  *   Form-API select element.
  */
-function _webform_paymethod_select_other_component_selector($form, &$form_state) {
+function _webform_paymethod_select_other_component_selector(array $form, array &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   if (isset($form_state['webform_paymethod_select_other_components'])) {
