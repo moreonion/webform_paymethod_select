@@ -147,7 +147,7 @@ function webform_paymethod_select_element_validate_line_item(array $element, arr
     $container = $element[$key];
 
     // Skip empty line items
-    if (empty($container['quantity']['amount']['#value']) && empty($container['tax_rate']['#value']) && empty($container['description']['#value'])) {
+    if (empty($container['tax_rate']['#value']) && empty($container['description']['#value'])) {
       continue;
     }
 
