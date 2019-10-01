@@ -47,7 +47,7 @@ The following properties of your payment can be read from other webform componen
 ### Advanced usage: Override values using special form keys
 *added in 7.x-1.16*
 
-You can also customize your payment line items for each form submission by using special form keys. Each of the keys must be prefixed with `payment_item{N}__` (the `{N}` references the n-th line item, starting with 1):
+You can also customize your payment line items for each form submission by using special form keys. Each of the keys must be prefixed with `payment__item{N}__` (the `{N}` references the n-th line item, starting with 1):
 
 * `amount`: The line item amount (numeric value).
 * `quantity`: The line item quantity (non-negative integer).

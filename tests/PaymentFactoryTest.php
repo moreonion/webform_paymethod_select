@@ -120,6 +120,36 @@ class PaymentFactoryTest extends DrupalUnitTestCase {
   }
 
   /**
+   * Test reading data from components and donation interval.
+   */
+  public function testReadMixedLegacyKeys() {
+    $component['extra'] = [
+      'currency_code_source' => 'fixed',
+      'currency_code' => 'EUR',
+      'line_items' => [
+        new PaymethodLineItem([
+          'name' => 'first_item',
+          'description' => 'First item',
+        ]),
+      ],
+    ];
+    $factory = new PaymentFactory($component);
+    $payment = entity_create('payment', []);
+    $submission = $this->createMock(Submission::class);
+    $key_values['payment__item1__amount'] = '3.0';
+    $key_values['payment__item1__quantity'] = '5';
+    $key_values['donation_interval'] = 'm';
+    $key_values['payment__item1__recurrence__day_of_month'] = '21';
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertEqual(15.0, $payment->totalAmount(TRUE));
+    $this->assertEqual([
+      'interval_unit' => 'monthly',
+      'interval_value' => '1',
+      'day_of_month' => '21',
+    ], (array) $payment->line_items['first_item']->recurrence);
+  }
+
+  /**
    * Test reading data from keys ignores empty and invalid values.
    */
   public function testReadInvalidValues() {

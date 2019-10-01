@@ -56,6 +56,7 @@ class PaymentFactory {
     // read their amount from a component.
     $index = 1;
     foreach ($extra['line_items'] as $line_item) {
+      $line_item->recurrence = $recurrence;
       $this->lineItemFromKeys($line_item, $index, $submission);
       if (isset($line_item->amount_source) && $line_item->amount_source === 'component') {
         $amount = $submission->valueByCid($line_item->amount_component);
@@ -65,9 +66,6 @@ class PaymentFactory {
       if (isset($line_item->quantity_source) && $line_item->quantity_source === 'component') {
         $quantity = $submission->valueByCid($line_item->quantity_component);
         $line_item->quantity = (int) $quantity;
-      }
-      if (empty($line_item->recurrence)) {
-        $line_item->recurrence = $recurrence;
       }
       $payment->setLineItem($line_item);
       $index++;
