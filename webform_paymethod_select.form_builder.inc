@@ -64,7 +64,7 @@ function webform_paymethod_select_form_builder_all_properties_form(&$form_state,
     '#tree'         => TRUE,
   );
 
-  $component_edit_form = _webform_edit_paymethod_select($element['#webform_component']);
+  $component_edit_form = _webform_edit_paymethod_select($element['#webform_component'], $form, $form_state);
   $form[$property] += $component_edit_form['extra'][$property];
 
   return $form;
@@ -80,7 +80,7 @@ function webform_paymethod_select_line_item_property_form(&$form_state, $form_ty
     '#tree'         => TRUE,
   );
 
-  $component_edit_form = _webform_edit_paymethod_select($element['#webform_component']);
+  $component_edit_form = _webform_edit_paymethod_select($element['#webform_component'], $form, $form_state);
   $form['line_items'] += $component_edit_form['extra']['line_items'];
   $form['line_items']['#parents'] = array('line_items');
 
