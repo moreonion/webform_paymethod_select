@@ -103,7 +103,7 @@ class PaymentFactory {
         $cast_int_factory(-31, 31),
       ],
       'recurrence.month' => ['recurrence__month', $cast_int_factory(1, 12)],
-      'recurrence.start_data' => ['recurrence__start_date', $cast_string],
+      'recurrence.start_date' => ['recurrence__start_date', $cast_string],
       'recurrence.count' => ['recurrence__count', $cast_int_factory(0)],
     ];
 
