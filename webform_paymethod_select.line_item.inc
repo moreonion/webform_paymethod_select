@@ -40,12 +40,19 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         ));
       }
 
-      $form_builder = isset($form_state['webform_paymethod_select_other_components']);
-      if ($form_builder && is_numeric($defaults->amount_component)) {
-        $defaults->amount_component = 'cid_' . $defaults->amount_component;
-      }
-      if ($form_builder && is_numeric($defaults->quantity_component)) {
-        $defaults->quantity_component = 'cid_' . $defaults->quantity_component;
+      $form_builder = substr($form_state['build_info']['form_id'], 0, 13) == 'form_builder_';
+      if ($form_builder) {
+        // $form_state['webform_paymethod_select_other_components'] is
+        // pre-poluated with the other form_builder elements. form_builder adds
+        // a 'cid_' prefix to all components to create element-IDs so we have to
+        // add this for our default values too.
+        // @see webform_paymethod_select_form_form_builder_field_configure_alter()
+        if (is_numeric($defaults->amount_component)) {
+          $defaults->amount_component = 'cid_' . $defaults->amount_component;
+        }
+        if (is_numeric($defaults->quantity_component)) {
+          $defaults->quantity_component = 'cid_' . $defaults->quantity_component;
+        }
       }
 
       $radio_id = drupal_html_id('webform-paymethod-select-' . $key . '-amount-source');
