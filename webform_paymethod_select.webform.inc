@@ -1,7 +1,10 @@
 <?php
 /**
  * @file
+ * Callbacks for the paymethod_select webform component.
  */
+
+use Drupal\little_helpers\ArrayConfig;
 
 /**
  * Implements _webform_defaults_[component]().
@@ -76,42 +79,31 @@ function _webform_paymethod_select_currency_options() {
  * Implements _webform_edit_[component]().
  */
 function _webform_edit_paymethod_select(array $component, array $original_form, array $form_state_copy) {
-  $settings = drupal_array_merge_deep(
-    array(
-      'payment_description'      => 'Default Payment',
-      'selected_payment_methods' => array(),
-      'currency_code'            => 'EUR',
-      'currency_code_source'     => 'fixed',
-      'currency_code_component'  => NULL,
-      'line_items'               => NULL,
-    ),
-    $component['extra']
-  );
+  ArrayConfig::mergeDefaults($component, _webform_defaults_paymethod_select());
 
-  $form['extra'] = array(
-    'payment_description' => array(
-      '#type' => 'textfield',
-      '#title' => t('Payment Description'),
-      '#default_value' => $component['extra']['payment_description'],
-      '#required' => TRUE,
-    ),
-  );
+  $form['extra']['payment_description'] = [
+    '#type' => 'textfield',
+    '#title' => t('Payment Description'),
+    '#default_value' => $component['extra']['payment_description'],
+    '#required' => TRUE,
+    '#parents' => ['extra', 'payment_description'],
+  ];
 
   $form['extra']['selected_payment_methods'] = array(
     '#title'         => t('Selected Payment Methods'),
     '#description'   => 'Select 1 or more payment methods that will be available for seletion to the user.',
     '#type'          => 'checkboxes',
     '#options'       => _webform_paymethod_select_payment_method_options(),
-    '#default_value' => $settings['selected_payment_methods'],
+    '#default_value' => $component['extra']['selected_payment_methods'],
+    '#parents' => ['extra', 'selected_payment_methods'],
   );
 
-  $form['extra']['currency_code'] = array(
+  $form['extra']['currency'] = array(
     '#type' => 'container',
-    '#element_validate' => array('_webform_paymethod_select_currency_values'),
   );
 
   $radio_id = drupal_html_id('webform-paymethod-select-currency');
-  $form['extra']['currency_code']['source'] = array(
+  $form['extra']['currency']['source'] = array(
     '#title' => t('Currency'),
     '#attributes' => array('class' => array($radio_id)),
     '#type' => 'radios',
@@ -119,30 +111,33 @@ function _webform_edit_paymethod_select(array $component, array $original_form, 
       'fixed' => t('Use a fixed currency.'),
       'component' => t('Read the currency from another form element.'),
     ),
-    '#default_value' => $settings['currency_code_source'],
+    '#default_value' => $component['extra']['currency_code_source'],
+    '#parents' => ['extra', 'currency_code_source'],
   );
 
-  $form['extra']['currency_code']['value'] = array(
+  $form['extra']['currency']['value'] = array(
     '#description'   => t('Select the currency for this payment.'),
     '#type'          => 'select',
     '#options'       => _webform_paymethod_select_currency_options(),
-    '#default_value' => $settings['currency_code'],
+    '#default_value' => $component['extra']['currency_code'],
     '#states'        => array(
       'visible' => array(".$radio_id" => array('value' => 'fixed')),
     ),
     '#wrapper_attributes' => array(
       'class' => array('webform-paymethod-select-component-or-value-option'),
     ),
+    '#parents' => ['extra', 'currency_code'],
   );
 
-  $form['extra']['currency_code']['component'] = array(
-    '#default_value' => $settings['currency_code_component'],
+  $form['extra']['currency']['component'] = array(
+    '#default_value' => $component['extra']['currency_code_component'],
     '#states' => array(
       'visible' => array(".$radio_id" => array('value' => 'component')),
     ),
     '#wrapper_attributes' => array(
       'class' => array('webform-paymethod-select-component-or-value-option'),
     ),
+    '#parents' => ['extra', 'currency_code_component'],
   ) + _webform_paymethod_select_other_component_selector($original_form, $form_state_copy);
 
   $form['extra']['line_items'] = array(
@@ -155,26 +150,14 @@ function _webform_edit_paymethod_select(array $component, array $original_form, 
     '#description'   => t('Define 1 or more line items.'),
     '#type'          => 'payment_line_item',
     '#cardinality'   => 0,
-    '#default_value' => $settings['line_items'],
+    '#default_value' => $component['extra']['line_items'],
     '#required'      => TRUE,
-    '#currency_code' => $settings['currency_code'],
+    '#currency_code' => $component['extra']['currency_code'],
+    '#parents' => ['extra', 'line_items'],
   );
 
   return $form;
 }
-
-/**
- * Element validate function for the component or value currency config.
- */
-function _webform_paymethod_select_currency_values($element, &$form_state, $form) {
-  $parents_parents = array_splice($element['#parents'], 0, -1);
-  $values = &drupal_array_get_nested_value($form_state['values'], $parents_parents);
-
-  $values['currency_code_source'] = $values['currency_code']['source'];
-  $values['currency_code_component'] = $values['currency_code']['component'];
-  $values['currency_code'] = $values['currency_code']['value'];
-}
-
 
 /**
  * Generate a component select form element for selecting other components.
