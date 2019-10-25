@@ -88,6 +88,23 @@ class PaymentFactory {
         return $i == $v && (is_null($min) || $i >= $min) && (is_null($max) || $i <= $max) ? $i : NULL;
       };
     };
+    $cast_date = function ($v) {
+      if ($v instanceof \DateTime) {
+        return $v;
+      }
+      try {
+        if (is_numeric($v)) {
+          return new \DateTime("@$v");
+        }
+        if (is_string($v)) {
+          return new \DateTime($v, new \DateTimeZone('UTC'));
+        }
+      }
+      catch (\Exception $e) {
+        // Then there is no start date.
+      }
+      return NULL;
+    };
     $map = [
       'amount' => ['amount', $cast_float],
       'quantity' => ['quantity', $cast_int_factory(0)],
@@ -103,7 +120,7 @@ class PaymentFactory {
         $cast_int_factory(-31, 31),
       ],
       'recurrence.month' => ['recurrence__month', $cast_int_factory(1, 12)],
-      'recurrence.start_date' => ['recurrence__start_date', $cast_string],
+      'recurrence.start_date' => ['recurrence__start_date', $cast_date],
       'recurrence.count' => ['recurrence__count', $cast_int_factory(0)],
     ];
 

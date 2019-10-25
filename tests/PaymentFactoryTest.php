@@ -178,4 +178,51 @@ class PaymentFactoryTest extends DrupalUnitTestCase {
     ], (array) $payment->line_items['first_item']->recurrence);
   }
 
+  /**
+   * Test recurrence start date.
+   */
+  public function testRecurrenceStartDate() {
+    $date = new \DateTime('2019-09-09', new \DateTimeZone('UTC'));
+    $component['extra'] = [
+      'currency_code_source' => 'fixed',
+      'currency_code' => 'EUR',
+      'line_items' => [
+        new PaymethodLineItem([
+          'name' => 'first_item',
+          'description' => 'First item',
+          'amount_source' => 'fixed',
+          'amount' => 3.0,
+          'quantity_source' => 'fixed',
+          'quantity' => 5,
+        ]),
+      ],
+    ];
+    $factory = new PaymentFactory($component);
+    $payment = entity_create('payment', []);
+    $submission = $this->createMock(Submission::class);
+    $key_values['payment__item1__recurrence__interval_unit'] = 'monthly';
+    // Test date object:
+    $key_values['payment__item1__recurrence__start_date'] = $date;
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertEqual(
+      $date, $payment->line_items['first_item']->recurrence->start_date
+    );
+    // Test timestamp → date:
+    $key_values['payment__item1__recurrence__start_date'] = '1567987200';
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertEqual(
+      $date, $payment->line_items['first_item']->recurrence->start_date
+    );
+    // Test string → date:
+    $key_values['payment__item1__recurrence__start_date'] = '2019-09-09';
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertEqual(
+      $date, $payment->line_items['first_item']->recurrence->start_date
+    );
+    // Test invalid date:
+    $key_values['payment__item1__recurrence__start_date'] = '2019-19-19';
+    $factory->updatePayment($payment, $this->submissionStub([], $key_values));
+    $this->assertTrue(empty($payment->line_items['first_item']->recurrence->start_date));
+  }
+
 }
