@@ -335,7 +335,7 @@ function webform_paymethod_select_form_form_builder_field_configure_alter(&$form
     $other_components[$component['form_builder_element_id']] = $component['name'];
   }
   unset($other_components[$element['#form_builder']['element_id']]);
-  $form_state['payment_line_item_other_components'] = $other_components;
+  $form_state['webform_paymethod_select_other_components'] = $other_components;
 }
 
 /**
