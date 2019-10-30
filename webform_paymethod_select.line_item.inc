@@ -19,7 +19,7 @@ function webform_paymethod_select_element_info_alter(&$element) {
  * Callback function set in hook_element_info_alter() hook
  */
 function webform_paymethod_select_element_process_line_item(array $element, array &$form_state, array $form) {
-  $parents = isset($element['#parents']) ? $element['#parents'] : array('extra', 'line_items', 'items');
+  $parents = isset($element['#parents']) ? $element['#parents'] : ['extra', 'line_items'];
 
   foreach($element as $key => &$line_element) {
 
@@ -210,19 +210,4 @@ function webform_paymethod_select_element_validate_line_item(array $element, arr
     $line_items[] = new PaymethodLineItem($data);
   }
   form_set_value($element, $line_items, $form_state);
-}
-
-/**
- * Implements hook_webform_component_presave().
- *
- * We use a fieldset to put the line_items inside in the webform component
- * edit form; but the payment module expects the line_item data to not be
- * nested inside a fieldset -> removing 1 nesting level here
- */
-function webform_paymethod_select_webform_component_presave(&$component) {
-  if (isset($component['extra']['line_items']['items'])) {
-    $line_items = &$component['extra']['line_items']['items'];
-    unset($component['extra']['line_items']['items']);
-    $component['extra']['line_items'] = &$line_items;
-  }
 }
