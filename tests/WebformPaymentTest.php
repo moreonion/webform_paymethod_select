@@ -2,6 +2,8 @@
 
 use Upal\DrupalUnitTestCase;
 
+use Drupal\payment_context\NullPaymentContext;
+
 /**
  * Integration test for webform_paymethod_select.
  */
@@ -53,6 +55,28 @@ class WebformPaymentTest extends DrupalUnitTestCase {
     $submission = reset($submissions);
     $payment = entity_load_single('payment', $submission->data[1][0]);
     $this->assertNotEmpty($payment);
+  }
+
+  /**
+   * Test rendering the payment form with errors.
+   */
+  public function testRender() {
+    $payment = new \Payment([
+      'method' => $this->method,
+      'contextObj' => new NullPaymentContext(),
+    ]);
+    $payment->setStatus(new \PaymentStatusItem(PAYMENT_STATUS_FAILED));
+    entity_save('payment', $payment);
+    $data[1][] = $payment->pid;
+    $submission = (object) [
+      'is_draft' => 1,
+      'highest_valid_page' => 0,
+      'data' => $data,
+    ];
+    $form = drupal_get_form('webform_client_form', $this->node, $submission);
+    $this->assertEqual('webform_paymethod_select_error', $form['submitted']['paymethod_select']['error']['#theme']);
+    $result = render($form['submitted']['paymethod_select']['error']);
+    $this->assertContains('"Failed"', $result);
   }
 
   /**
