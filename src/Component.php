@@ -179,10 +179,10 @@ class Component {
         return;
       }
       elseif (!$this->statusIsOneOf(PAYMENT_STATUS_NEW)) {
-        $status = payment_status_info($payment->getStatus()->status)->title;
-        $element['error'] = array(
-          '#markup' => t('The previous payment attempt seems to have failed. The current payment status is "!status". Please try again!', ['!status' => $status]),
-        );
+        $element['error'] = [
+          '#theme' => 'webform_paymethod_select_error',
+          '#payment' => $payment,
+        ];
       }
     }
     else {
