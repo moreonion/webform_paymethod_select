@@ -72,6 +72,11 @@ function webform_paymethod_select_theme() {
   $hooks['webform_paymethod_select_component'] = $options;
   $hooks['webform_paymethod_select_placeholder'] = $options;
   $hooks['webform_paymethod_select_already_paid'] = $options;
+  $hooks['webform_paymethod_select_error'] = [
+    'variables' => ['payment' => NULL],
+    'template' => 'templates/webform-paymethod-select-error',
+    'file' => $options['file'],
+  ];
   return $hooks;
 }
 

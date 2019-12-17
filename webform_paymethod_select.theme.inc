@@ -95,3 +95,13 @@ function theme_webform_paymethod_select_placeholder(&$variables) {
 
   return render($render);
 }
+
+/**
+ * Returns HTML for the error message displayed above the form.
+ */
+function template_preprocess_webform_paymethod_select_error(&$variables) {
+  $payment = $variables['payment'];
+  $status = $payment->getStatus();
+  $variables['status'] = $status;
+  $variables['status_title'] = payment_status_info($status->status)->title;
+}
