@@ -13,15 +13,10 @@ class PaymentLineItemTest extends DrupalUnitTestCase {
    * Test processing and validating a line item.
    */
   public function testProcessAndValidateDefaults() {
-    $node_stub = (object) [
-      'webform' => [
-        'components' => [],
-      ],
-    ];
     $form_id = 'payment_line_item_test';
-    $form['#node'] = $node_stub;
     $form['line_item'] = [
       '#type' => 'payment_line_item',
+      '#other_components' => [],
     ];
     $form_state = form_state_defaults();
     $form_state['build_info']['form_id'] = $form_id;

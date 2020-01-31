@@ -67,8 +67,6 @@ class FormBuilderElement extends Element {
     $form['selected_payment_methods'] = $edit['extra']['selected_payment_methods'] + $group;
     $form['currency'] = $edit['extra']['currency'] + $group;
     $form['line_items'] = $edit['extra']['line_items'] + $group;
-    // Make the other components available for processing functions.
-    $form_state['webform_paymethod_select_other_components'] = $form['currency']['component']['#options'];
     return $form;
   }
 
