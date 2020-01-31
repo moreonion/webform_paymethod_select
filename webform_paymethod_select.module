@@ -316,34 +316,6 @@ function webform_paymethod_select_webform_submission_presave($node, &$submission
 }
 
 /**
- * Implements hook_FORM_ID_alter().
- * Implements hook_form_form_builder_field_configure_alter().
- *
- * Generate a list of all available components that might be used as amount_source
- * and make it available for @see webform_paymethod_select_element_process_line_item().
- */
-function webform_paymethod_select_form_form_builder_field_configure_alter(&$form, &$form_state) {
-  if ($form['#_edit_element']['#form_builder']['element_type'] != 'paymethod_select') {
-    return;
-  }
-
-  $element = &$form['#_edit_element'];
-  $build_info = &$form_state['build_info'];
-  $nid = $build_info['args'][1];
-  $fb_form = FBLoader::instance()->fromCache($build_info['args'][0], $build_info['args'][1]);
-  $components = $fb_form->getComponents(node_load($nid));
-  $other_components = [];
-  foreach ($components as $cid => $component) {
-    if (in_array($component['type'], ['pagebreak', 'fieldset'])) {
-      continue;
-    }
-    $other_components[$component['form_builder_element_id']] = $component['name'];
-  }
-  unset($other_components[$element['#form_builder']['element_id']]);
-  $form_state['webform_paymethod_select_other_components'] = $other_components;
-}
-
-/**
  * Implements hook_node_presave().
  *
  * Transform form_builder-element_id's in ->amount_component
