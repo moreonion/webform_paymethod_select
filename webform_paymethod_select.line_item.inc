@@ -20,6 +20,7 @@ function webform_paymethod_select_element_info_alter(&$element) {
  */
 function webform_paymethod_select_element_process_line_item(array $element, array &$form_state, array $form) {
   $parents = isset($element['#parents']) ? $element['#parents'] : ['extra', 'line_items'];
+  $other_components = $element['#other_components'];
 
   foreach($element as $key => &$line_element) {
 
@@ -95,7 +96,7 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         '#states'        => array(
           'visible' => array(".$radio_id" => array('value' => 'component')),
         ),
-      ) + _webform_paymethod_select_other_component_selector($form, $form_state);
+      ) + _webform_paymethod_select_other_component_selector($other_components);
 
       $line_element['tax_rate']['#wrapper_attributes'] = array(
         'class' => array('webform-paymethod-select-line-item-tax-rate'),
@@ -139,7 +140,7 @@ function webform_paymethod_select_element_process_line_item(array $element, arra
         '#states'        => array(
           'visible' => array(".$radio_quantity" => array('value' => 'component')),
         ),
-      ) + _webform_paymethod_select_other_component_selector($form, $form_state);
+      ) + _webform_paymethod_select_other_component_selector($other_components);
     }
   }
   return $element;

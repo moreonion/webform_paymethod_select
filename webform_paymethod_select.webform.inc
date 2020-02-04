@@ -129,6 +129,7 @@ function _webform_edit_paymethod_select(array $component, array $original_form, 
     '#parents' => ['extra', 'currency_code'],
   );
 
+  $other_components = _webform_paymethod_select_other_components($original_form, $form_state_copy);
   $form['extra']['currency']['component'] = array(
     '#default_value' => $component['extra']['currency_code_component'],
     '#states' => array(
@@ -138,7 +139,7 @@ function _webform_edit_paymethod_select(array $component, array $original_form, 
       'class' => array('webform-paymethod-select-component-or-value-option'),
     ),
     '#parents' => ['extra', 'currency_code_component'],
-  ) + _webform_paymethod_select_other_component_selector($original_form, $form_state_copy);
+  ) + _webform_paymethod_select_other_component_selector($other_components);
 
   $form['extra']['line_items'] = array(
     '#type' => 'fieldset',
@@ -154,18 +155,19 @@ function _webform_edit_paymethod_select(array $component, array $original_form, 
     '#required'      => TRUE,
     '#currency_code' => $component['extra']['currency_code'],
     '#parents' => ['extra', 'line_items'],
+    '#other_components' => $other_components,
   );
 
   return $form;
 }
 
 /**
- * Generate a component select form element for selecting other components.
+ * Get a list of all other components in this webform.
  *
- * @return array
- *   Form-API select element.
+ * @return string[]
+ *   Component names keyed by cid or form_builder element ID.
  */
-function _webform_paymethod_select_other_component_selector(array $form, array &$form_state) {
+function _webform_paymethod_select_other_components(array $form, array &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   if (isset($form_state['webform_paymethod_select_other_components'])) {
@@ -181,7 +183,16 @@ function _webform_paymethod_select_other_component_selector(array $form, array &
     }
     $form_state['webform_paymethod_select_other_components'] = $other_components;
   }
+  return $other_components;
+}
 
+/**
+ * Generate a component select form element for selecting other components.
+ *
+ * @return array
+ *   Form-API select element.
+ */
+function _webform_paymethod_select_other_component_selector(array $other_components) {
   $components_disabled = empty($other_components);
   if ($components_disabled) {
     $other_components = array('' => t('No available components'));
