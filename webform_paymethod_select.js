@@ -174,7 +174,7 @@ Webform.prototype.removeProgress = function() {
   this.buttons.prop('disabled', false);
 }
 
-Drupal.behaviors.webform_paymethod_select = {
+Drupal.behaviors.ZZZWebformPaymethodSelect = {
   attach: function(context) {
     var self = this;
     $('.payment-method-form', context).closest('form').each(function() {
