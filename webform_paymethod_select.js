@@ -79,14 +79,13 @@ Webform.prototype.bind = function() {
     self.activeButton = null;
   });
   if (this.$form.find('[name=webform_ajax_wrapper_id]').length > 0) {
-    this.$form.bind('form-pre-serialize', function(event, $form, options, veto) {
+    function beforeSubmit(form_values, $form, options) {
       var ed = options.data;
       var button = $form.find('input[name="'+ed._triggering_element_name+'"][value="'+ed._triggering_element_value+'"]').first();
       if (button && $(button).attr('formnovalidate') || self.passSubmit) {
-        return;
+        return true;
       }
       self.activeButton = button;
-      veto.veto = true;
       self.showProgress();
       self.validate(new ExecuteOnceReady(
         self.ajaxSubmitFunction(options),
@@ -94,6 +93,21 @@ Webform.prototype.bind = function() {
         function() { self.removeProgress(); }
       ));
       self.activeButton = null;
+      return false;
+    }
+    this.$form.find('.ajax-processed').each(function () {
+      var ajax_id = $(this).attr('id');
+      if (ajax_id in Drupal.ajax) {
+        var s = Drupal.ajax[ajax_id]
+        var originalBeforeSubmit = s.beforeSubmit
+        s.beforeSubmit = function (form_values, $form, options) {
+          var ret = originalBeforeSubmit();
+          if (typeof ret == 'undefined') {
+            ret = true;
+          }
+          return beforeSubmit(form_values, $form, options) && ret;
+        }
+      }
     });
   }
 };
