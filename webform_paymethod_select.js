@@ -96,23 +96,63 @@ Webform.prototype.bind = function() {
       self.activeButton = null;
     });
   }
+  // Keep track of the selected paymethod and update the currently visible form.
+  this.$form.find('.paymethod-select-wrapper').bind('change', function(event) {
+    if ($(event.target).attr('name') === 'submitted[paymethod_select][payment_method_selector]') {
+      var pmid = $('.paymethod-select-radios input:checked', this).val();
+      if (this.dataset.pmidSelected !== pmid) {
+        this.dataset.pmidSelected = pmid;
+        self.updatePaymethodForms($('[data-pmid='+pmid+']', this));
+      }
+    }
+  })
+  self.updatePaymethodForms();
 };
+
+Webform.prototype.updatePaymethodForms = function($fieldsets) {
+  // Fields required by a paymethod should be required when they are displayed.
+  $fieldsets = $fieldsets || this.getSelectedFieldsets();
+  $fieldsets.each(function() {
+    if (!document.body.contains(this)) {
+      // Guard against running for unmounted elements.
+      return
+    }
+    $(this).find('[data-controller-required]').each(function() {
+      this.required = true;
+      if (typeof $.fn.rules === 'function') {
+        $(this).rules('add', {required: true});
+      }
+    })
+    $(this).siblings('.payment-method-form').each(function() {
+      this.required = false;
+      if (typeof $.fn.rules === 'function') {
+        $(this).rules('remove', 'required');
+      }
+    });
+  });
+
+}
+
+Webform.prototype.getSelectedFieldsets = function() {
+  var $fieldsets = $([]);
+  this.$form.find('.paymethod-select-wrapper').each(function() {
+    var pmid = this.dataset.pmidSelected;
+    if (pmid) {
+      $.merge($fieldsets, $('[data-pmid='+pmid+']', this));
+    }
+    else {
+      $.merge($fieldsets, $('.payment-method-form', this).first());
+    }
+  });
+  return $fieldsets;
+}
 
 Webform.prototype.validate = function(submitter) {
   if (Drupal.payment_handler) {
-    this.$form.find('.paymethod-select-wrapper').each(function() {
-      var pmid, $fieldset;
-      var $radios = $('.paymethod-select-radios input:checked', this);
-      if ($radios.length > 0) {
-        pmid = $('.paymethod-select-radios input:checked', this).val();
-        $fieldset = $('[data-pmid='+pmid+']', this);
-      }
-      else {
-        $fieldset = $('.payment-method-form', this).first();
-        pmid = parseInt($fieldset.data('pmid'));
-      }
+    this.getSelectedFieldsets().each(function() {
+      var pmid = parseInt(this.dataset.pmid);
       if (pmid in Drupal.payment_handler) {
-        var ret = Drupal.payment_handler[pmid](pmid, $fieldset, submitter);
+        var ret = Drupal.payment_handler[pmid](pmid, this, submitter);
         if (!ret) {
           submitter.need();
         }
