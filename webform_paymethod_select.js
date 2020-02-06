@@ -101,7 +101,7 @@ Webform.prototype.bind = function() {
         var s = Drupal.ajax[ajax_id]
         var originalBeforeSubmit = s.beforeSubmit
         s.beforeSubmit = function (form_values, $form, options) {
-          var ret = originalBeforeSubmit();
+          var ret = originalBeforeSubmit(form_values, $form, options);
           if (typeof ret == 'undefined') {
             ret = true;
           }
