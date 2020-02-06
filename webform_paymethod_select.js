@@ -105,7 +105,7 @@ Webform.prototype.bind = function() {
           if (typeof ret == 'undefined') {
             ret = true;
           }
-          return beforeSubmit(form_values, $form, options) && ret;
+          return ret && beforeSubmit(form_values, $form, options);
         }
       }
     });
