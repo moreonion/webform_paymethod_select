@@ -98,7 +98,7 @@ Webform.prototype.bind = function() {
     this.$form.find('.ajax-processed').each(function () {
       var ajax_id = $(this).attr('id');
       if (ajax_id in Drupal.ajax) {
-        var s = Drupal.ajax[ajax_id]
+        var s = Drupal.ajax[ajax_id].options
         var originalBeforeSubmit = s.beforeSubmit
         s.beforeSubmit = function (form_values, $form, options) {
           var ret = originalBeforeSubmit(form_values, $form, options);
@@ -174,7 +174,7 @@ Webform.prototype.removeProgress = function() {
   this.buttons.prop('disabled', false);
 }
 
-Drupal.behaviors.ZZZWebformPaymethodSelect = {
+Drupal.behaviors.WebformPaymethodSelect = {
   attach: function(context) {
     var self = this;
     $('.payment-method-form', context).closest('form').each(function() {
@@ -183,4 +183,5 @@ Drupal.behaviors.ZZZWebformPaymethodSelect = {
     });
   },
 };
+
 })(jQuery);
