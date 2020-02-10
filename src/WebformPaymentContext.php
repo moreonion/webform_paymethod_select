@@ -171,4 +171,12 @@ class WebformPaymentContext implements PaymentContextInterface {
     $options['query']['hash'] = _webform_paymethod_select_reenter_hash($ids['nid'], $ids['sid'], $page_num);
     $this->redirect("node/{$ids['nid']}/webform-continue/{$ids['sid']}/$page_num", $options);
   }
+
+  /**
+   * Get an AJAX-callback URL for a payment method.
+   */
+  public function callbackUrl(\PaymentMethod $method) {
+    return url("webform-paymethod-select/ajax/{$this->component['cid']}/{$method->pmid}");
+  }
+
 }

@@ -350,4 +350,21 @@ class Component {
     return FALSE;
   }
 
+  /**
+   * Execute a controller specific AJAX callback.
+   */
+  public function executeAjaxCallback(\PaymentMethod $method, $form, &$form_state) {
+    $payment = $this->payment;
+    $submission = Webform::fromNode($form['#node'])->formStateToSubmission($form_state);
+    $context = new WebformPaymentContext($submission, $form_state, $this->component);
+    $payment->contextObj = $context;
+    $this->refreshPaymentFromContext();
+    $payment->method = $method;
+    $result = $method->controller->ajaxCallback($payment);
+    if (!empty($payment->pid)) {
+      $form_state['values']['submitted'][$this->component['cid']] = [$payment->pid];
+    }
+    return $result;
+  }
+
 }
