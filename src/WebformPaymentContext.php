@@ -143,4 +143,14 @@ class WebformPaymentContext implements PaymentContextInterface {
     $options['query']['hash'] = _webform_paymethod_select_reenter_hash($ids['nid'], $ids['sid'], $page_num);
     $this->redirect("node/{$ids['nid']}/webform-continue/{$ids['sid']}/$page_num", $options);
   }
+
+  /**
+   * Store the payment’s pid in the form state if needed.
+   */
+  public function setPid($pid) {
+    if ($pid) {
+      $form_state['values']['submitted'][$this->component['cid']] = [$pid];
+    }
+  }
+
 }

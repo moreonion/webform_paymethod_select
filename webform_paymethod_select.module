@@ -234,13 +234,12 @@ function webform_paymethod_select_form_submit($form, &$form_state) {
     $draft = !empty($form_state['save_draft']);
     $form_state['save_draft'] = TRUE;
     webform_client_form_submit($form, $form_state);
-    $submission = Submission::load($form['#node']->nid, $form_state['values']['details']['sid']);
 
     $success = TRUE;
     $pending = TRUE;
     foreach ($form_state['webform_paymethod_select']['pages'][$page_num] as $cid) {
       $component = $form_state['webform_paymethod_select'][$cid];
-      $component->submit($form, $form_state, $submission);
+      $component->submit($component->createContext($form_state));
       $pending = $pending && $component->statusIsOneOf(PAYMENT_STATUS_PENDING, PAYMENT_STATUS_SUCCESS);
       $success = $success && $component->statusIsOneOf(PAYMENT_STATUS_SUCCESS);
     }

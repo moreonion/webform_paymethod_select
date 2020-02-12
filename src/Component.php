@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_paymethod_select;
 
+use Drupal\little_helpers\Webform\Submission;
 use Drupal\little_helpers\Webform\Webform;
 
 /**
@@ -49,7 +50,7 @@ class Component {
       'description'     => $config['payment_description'],
       'finish_callback' => 'webform_paymethod_select_payment_finish',
     ));
-    $this->refreshPaymentFromContext($context);
+    $this->refreshPayment($context);
     return $this->payment;
   }
 
@@ -63,7 +64,7 @@ class Component {
    */
   protected function reloadPayment($pid, WebformPaymentContext $context) {
     $this->payment = entity_load_single('payment', $pid);
-    $this->refreshPaymentFromContext($context);
+    $this->refreshPayment($context);
     return $this->payment;
   }
 
@@ -164,8 +165,7 @@ class Component {
   public function render(&$element, &$form, &$form_state) {
     unset($element['#theme']);
 
-    $s = Webform::fromNode($form['#node'])->formStateToSubmission($form_state);
-    $context = new WebformPaymentContext($s, $form_state, $this->component);
+    $context = $this->createContext($form_state);
 
     if (isset($element['#value'][0]) && is_numeric($element['#value'][0])) {
       $payment = $this->reloadPayment($element['#value'][0], $context);
@@ -292,7 +292,7 @@ class Component {
    * @param \Drupal\webform_paymethod_select\WebformPaymentContext $context
    *   The payment context to read values from.
    */
-  protected function refreshPaymentFromContext(WebformPaymentContext $context) {
+  protected function refreshPayment(WebformPaymentContext $context) {
     $this->payment->contextObj = $context;
     $submission = $context->getSubmission();
     (new PaymentFactory($this->component))
@@ -302,30 +302,30 @@ class Component {
   /**
    * Form submit callback: Initiate the payment.
    */
-  public function submit(&$form, &$form_state, $submission) {
+  public function submit(WebformPaymentContext $context) {
     $payment = $this->payment;
     if ($this->statusIsOneOf(PAYMENT_STATUS_SUCCESS)) {
       return;
     }
-    $this->refreshPaymentFromContext(new WebformPaymentContext($submission, $form_state, $this->component));
+    $this->refreshPayment($context);
 
     if ($payment->getStatus()->status != PAYMENT_STATUS_NEW) {
       $payment->setStatus(new \PaymentStatusItem(PAYMENT_STATUS_NEW));
     }
     entity_save('payment', $payment);
+    $context->setPid($payment->pid);
 
     // Set component value to the pid - we don't save any payment data.
-    $node = $submission->webform->node;
+    $submission = $context->getSubmission();
     db_query(
       "UPDATE {webform_submitted_data} SET data=:pid WHERE nid=:nid AND cid=:cid AND sid=:sid",
       [
-        ':nid' => $node->nid,
+        ':nid' => $submission->nid,
         ':cid' => $this->component['cid'],
         ':sid' => $submission->sid,
         ':pid' => $payment->pid,
       ]
     );
-    $form_state['values']['submitted'][$this->component['cid']] = array($payment->pid);
 
     // Execute the payment.
     $payment->execute();
@@ -348,6 +348,22 @@ class Component {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Create a payment context for this component.
+   */
+  public function createContext(array &$form_state, Submission $submission = NULL) {
+    if (!$submission) {
+      if (!($sid = $form_state['values']['details']['sid'] ?? NULL)) {
+        $submission = Submission::load($this->component['nid'], $sid);
+      }
+      else {
+        $node = node_load($this->component['nid']);
+        $submission = Webform::fromNode($node)->formStateToSubmission($form_state);
+      }
+    }
+    return new WebformPaymentContext($submission, $form_state, $this->component);
   }
 
 }
