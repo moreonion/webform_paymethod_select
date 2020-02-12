@@ -49,8 +49,7 @@ class Component {
       'description'     => $config['payment_description'],
       'finish_callback' => 'webform_paymethod_select_payment_finish',
     ));
-    $this->payment->contextObj = $context;
-    $this->refreshPaymentFromContext();
+    $this->refreshPaymentFromContext($context);
     return $this->payment;
   }
 
@@ -64,8 +63,7 @@ class Component {
    */
   protected function reloadPayment($pid, WebformPaymentContext $context) {
     $this->payment = entity_load_single('payment', $pid);
-    $this->payment->contextObj = $context;
-    $this->refreshPaymentFromContext();
+    $this->refreshPaymentFromContext($context);
     return $this->payment;
   }
 
@@ -290,9 +288,13 @@ class Component {
 
   /**
    * Re-read configuration from component and context and update the payment.
+   *
+   * @param \Drupal\webform_paymethod_select\WebformPaymentContext $context
+   *   The payment context to read values from.
    */
-  protected function refreshPaymentFromContext() {
-    $submission = $this->payment->contextObj->getSubmission();
+  protected function refreshPaymentFromContext(WebformPaymentContext $context) {
+    $this->payment->contextObj = $context;
+    $submission = $context->getSubmission();
     (new PaymentFactory($this->component))
       ->updatePayment($this->payment, $submission);
   }
@@ -305,9 +307,7 @@ class Component {
     if ($this->statusIsOneOf(PAYMENT_STATUS_SUCCESS)) {
       return;
     }
-    $context = new WebformPaymentContext($submission, $form_state, $this->component);
-    $payment->contextObj = $context;
-    $this->refreshPaymentFromContext();
+    $this->refreshPaymentFromContext(new WebformPaymentContext($submission, $form_state, $this->component));
 
     if ($payment->getStatus()->status != PAYMENT_STATUS_NEW) {
       $payment->setStatus(new \PaymentStatusItem(PAYMENT_STATUS_NEW));
