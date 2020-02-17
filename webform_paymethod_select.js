@@ -79,14 +79,13 @@ Webform.prototype.bind = function() {
     self.activeButton = null;
   });
   if (this.$form.find('[name=webform_ajax_wrapper_id]').length > 0) {
-    this.$form.bind('form-pre-serialize', function(event, $form, options, veto) {
+    function beforeSubmit(form_values, $form, options) {
       var ed = options.data;
       var button = $form.find('input[name="'+ed._triggering_element_name+'"][value="'+ed._triggering_element_value+'"]').first();
       if (button && $(button).attr('formnovalidate') || self.passSubmit) {
-        return;
+        return true;
       }
       self.activeButton = button;
-      veto.veto = true;
       self.showProgress();
       self.validate(new ExecuteOnceReady(
         self.ajaxSubmitFunction(options),
@@ -94,6 +93,21 @@ Webform.prototype.bind = function() {
         function() { self.removeProgress(); }
       ));
       self.activeButton = null;
+      return false;
+    }
+    this.$form.find('.ajax-processed').each(function () {
+      var ajax_id = $(this).attr('id');
+      if (ajax_id in Drupal.ajax) {
+        var s = Drupal.ajax[ajax_id].options
+        var originalBeforeSubmit = s.beforeSubmit
+        s.beforeSubmit = function (form_values, $form, options) {
+          var ret = originalBeforeSubmit(form_values, $form, options);
+          if (typeof ret == 'undefined') {
+            ret = true;
+          }
+          return ret && beforeSubmit(form_values, $form, options);
+        }
+      }
     });
   }
   // Keep track of the selected paymethod and update the currently visible form.
@@ -200,7 +214,7 @@ Webform.prototype.removeProgress = function() {
   this.buttons.prop('disabled', false);
 }
 
-Drupal.behaviors.webform_paymethod_select = {
+Drupal.behaviors.WebformPaymethodSelect = {
   attach: function(context) {
     var self = this;
     $('.payment-method-form', context).closest('form').each(function() {
@@ -209,4 +223,5 @@ Drupal.behaviors.webform_paymethod_select = {
     });
   },
 };
+
 })(jQuery);
