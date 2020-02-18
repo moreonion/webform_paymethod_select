@@ -355,10 +355,6 @@ class Component {
    */
   public function executeAjaxCallback(\PaymentMethod $method, $form, &$form_state) {
     $payment = $this->payment;
-    $submission = Webform::fromNode($form['#node'])->formStateToSubmission($form_state);
-    $context = new WebformPaymentContext($submission, $form_state, $this->component);
-    $payment->contextObj = $context;
-    $this->refreshPaymentFromContext();
     $payment->method = $method;
     $result = $method->controller->ajaxCallback($payment);
     if (!empty($payment->pid)) {
