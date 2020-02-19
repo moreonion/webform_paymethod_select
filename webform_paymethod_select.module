@@ -22,7 +22,7 @@ require_once dirname(__FILE__) . '/webform_paymethod_select.webform.inc';
  * Implements hook_menu().
  */
 function webform_paymethod_select_menu() {
-  $menu['node/%webform_paymethod_select_submission/webform-continue/%/%'] = array(
+  $items['node/%webform_paymethod_select_submission/webform-continue/%/%'] = [
     'title callback' => 'webform_paymethod_select_page_title',
     'title arguments' => array(1),
     'page callback' => 'webform_paymethod_select_continue',
@@ -32,8 +32,48 @@ function webform_paymethod_select_menu() {
     'load arguments' => array(3),
     'type' => MENU_CALLBACK,
     'file' => 'webform_paymethod_select.pages.inc',
-  );
-  return $menu;
+  ];
+  $items['webform-paymethod-select/ajax/%/%entity_object'] = [
+    'page callback' => 'webform_paymethod_select_method_callback',
+    'delivery callback' => 'little_helpers_deliver_json',
+    'access arguments' => ['access content'],
+    'page arguments' => [2, 3],
+    'load arguments' => ['payment_method'],
+    'type' => MENU_CALLBACK,
+  ];
+  return $items;
+}
+
+/**
+ * Page callback: Handle a AJAX callback from a payment form.
+ */
+function webform_paymethod_select_method_callback($cid, \PaymentMethod $method) {
+  // We only load this here so we can read the config from the form_state.
+  // The form_state isn’t modified there is no need to update the form_build_id.
+  list($form, $form_state, $form_id, $form_build_id, $commands) = ajax_get_form();
+
+  if (!($component = $form_state['webform_paymethod_select'][$cid] ?? NULL)) {
+    return MENU_NOT_FOUND;
+  }
+
+  $result = $component->executeAjaxCallback($method, $form, $form_state);
+
+  // Stop execution if an error code or empty result was returned.
+  if (!is_array($result)) {
+    return $result;
+  }
+
+  // Otherwise save all changes to the form_state.
+  form_set_cache($form['#build_id'], $form, $form_state);
+
+  // Tell the caller about a possibly changed build id. @see form_get_cache().
+  if (isset($form['#old_build_id'])) {
+    $result['form_build_id'] = [
+      'old' => $form['#old_build_id'],
+      'new' => $form['#build_id'],
+    ];
+  }
+  return $result;
 }
 
 /**

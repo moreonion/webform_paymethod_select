@@ -353,4 +353,17 @@ class Component {
     return FALSE;
   }
 
+  /**
+   * Execute a controller specific AJAX callback.
+   */
+  public function executeAjaxCallback(\PaymentMethod $method, $form, &$form_state) {
+    $payment = $this->payment;
+    $payment->method = $method;
+    $result = $method->controller->ajaxCallback($payment);
+    if (!empty($payment->pid)) {
+      $form_state['values']['submitted'][$this->component['cid']] = [$payment->pid];
+    }
+    return $result;
+  }
+
 }
