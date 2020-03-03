@@ -340,7 +340,10 @@ function webform_paymethod_select_node_presave($node) {
     return;
   }
   $webform = new Webform($node);
-  foreach ($webform->componentsByType('paymethod_select') as $component) {
+  foreach ($webform->componentsByType('paymethod_select') as &$component) {
+    if (($id = $component['extra']['currency_code_component'] ?? NULL) && !is_numeric($id)) {
+      $component['extra']['currency_code_component'] = $element_id_to_cid[$id];
+    }
     foreach ($component['extra']['line_items'] as $item) {
       if (!empty($item->amount_component) && !is_numeric($item->amount_component)) {
         $item->amount_component = $element_id_to_cid[$item->amount_component];

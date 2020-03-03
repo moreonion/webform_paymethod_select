@@ -41,9 +41,16 @@ class ElementIdToCidTest extends DrupalUnitTestCase {
       'form_key' => 'amount_source',
       'form_builder_element_id' => 'new_1234',
     ];
+    $components[3] = [
+      'type' => 'select',
+      'cid' => 3,
+      'form_key' => 'currency',
+      'form_builder_element_id' => 'cid_3',
+    ];
     $components[2] = [
       'type' => 'paymethod_select',
       'extra' => [
+        'currency_code_component' => 'cid_3',
         'line_items' => [
           new PaymethodLineItem([
             'amount_component' => 'new_1234',
@@ -54,7 +61,9 @@ class ElementIdToCidTest extends DrupalUnitTestCase {
     ];
     $node = $this->nodeWithComponents($components);
     webform_paymethod_select_node_presave($node);
-    $this->assertEqual(1, $node->webform['components'][2]['extra']['line_items'][0]->amount_component);
+    $component = $node->webform['components'][2];
+    $this->assertEqual(3, $component['extra']['currency_code_component']);
+    $this->assertEqual(1, $component['extra']['line_items'][0]->amount_component);
   }
 
   /**
