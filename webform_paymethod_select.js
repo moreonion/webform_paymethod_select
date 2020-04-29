@@ -166,7 +166,7 @@ Webform.prototype.validate = function(submitter) {
     this.getSelectedFieldsets().each(function() {
       var pmid = parseInt(this.dataset.pmid);
       if (pmid in Drupal.payment_handler) {
-        var ret = Drupal.payment_handler[pmid](pmid, this, submitter);
+        var ret = Drupal.payment_handler[pmid](pmid, $(this), submitter);
         if (!ret) {
           submitter.need();
         }
