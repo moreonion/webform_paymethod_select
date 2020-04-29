@@ -1,15 +1,13 @@
 <?php
+
 /**
  * @file
+ * Hook implementations for the webform_paymethod_select module.
  */
 
-use \Drupal\webform_paymethod_select\WebformPaymentContext;
-use \Drupal\webform_paymethod_select\PaymentRecurrentController;
-use \Drupal\webform_paymethod_select\Component;
-use \Drupal\little_helpers\Webform\Submission;
-use \Drupal\little_helpers\Webform\FormState;
-use \Drupal\little_helpers\Webform\Webform;
-use \Drupal\form_builder\Loader as FBLoader;
+use Drupal\webform_paymethod_select\Component;
+use Drupal\little_helpers\Webform\Submission;
+use Drupal\little_helpers\Webform\Webform;
 
 if (module_exists('form_builder_webform') == TRUE) {
   require_once dirname(__FILE__) . '/webform_paymethod_select.form_builder.inc';
