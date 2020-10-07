@@ -316,19 +316,13 @@ class Component {
       $payment->setStatus(new \PaymentStatusItem(PAYMENT_STATUS_NEW));
     }
     entity_save('payment', $payment);
-
-    // Set component value to the pid - we don't save any payment data.
-    $node = $submission->webform->node;
-    db_query(
-      "UPDATE {webform_submitted_data} SET data=:pid WHERE nid=:nid AND cid=:cid AND sid=:sid",
-      [
-        ':nid' => $node->nid,
-        ':cid' => $this->component['cid'],
-        ':sid' => $submission->sid,
-        ':pid' => $payment->pid,
-      ]
-    );
-    $form_state['values']['submitted'][$this->component['cid']] = array($payment->pid);
+    $form_state['values']['submitted'][$this->component['cid']] = $this->value();
+    db_update('webform_submitted_data')
+      ->condition('nid', $submission->nid)
+      ->condition('sid', $submission->sid)
+      ->condition('cid', $this->component['cid'])
+      ->fields(['data' => $payment->pid])
+      ->execute();
 
     // Execute the payment.
     $payment->execute();
@@ -364,6 +358,13 @@ class Component {
       $form_state['values']['submitted'][$this->component['cid']] = [$payment->pid];
     }
     return $result;
+  }
+
+  /**
+   * Get the component’s value for saving in the submission.
+   */
+  public function value() {
+    return $this->payment->pid ? [$this->payment->pid] : [];
   }
 
 }
