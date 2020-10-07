@@ -65,9 +65,9 @@ function webform_paymethod_select_method_callback($cid, \PaymentMethod $method) 
   form_set_cache($form['#build_id'], $form, $form_state);
 
   // Tell the caller about a possibly changed build id. @see form_get_cache().
-  if (isset($form['#old_build_id'])) {
+  if (isset($form['#build_id_old'])) {
     $result['form_build_id'] = [
-      'old' => $form['#old_build_id'],
+      'old' => $form['#build_id_old'],
       'new' => $form['#build_id'],
     ];
   }
