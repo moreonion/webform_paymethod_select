@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_paymethod_select;
 
+use Drupal\little_helpers\Webform\Submission;
 use Drupal\little_helpers\Webform\Webform;
 
 /**
@@ -350,12 +351,21 @@ class Component {
   /**
    * Execute a controller specific AJAX callback.
    */
-  public function executeAjaxCallback(\PaymentMethod $method, $form, &$form_state) {
+  public function executeAjaxCallback(\PaymentMethod $method, &$form, &$form_state) {
     $payment = $this->payment;
     $payment->method = $method;
     $result = $method->controller->ajaxCallback($payment);
     if (!empty($payment->pid)) {
-      $form_state['values']['submitted'][$this->component['cid']] = [$payment->pid];
+      $form_state['values']['submitted'][$this->component['cid']] = $this->value();
+      if (empty($form_state['values']['details']['sid'] ?? NULL)) {
+        $node = $form['#node'];
+        $submission = webform_submission_create($node, $GLOBALS['user'], $form_state);
+        $submission->is_draft = TRUE;
+        $submission->highest_valid_page = $this->component['page_num'] - 1;
+        $form['details']['sid']['#value'] = $sid = webform_submission_insert($node, $submission);
+        $payment->contextObj = new WebformPaymentContext(new Submission($node, $submission), $form_state, $this->component);
+        entity_save('payment', $payment);
+      }
     }
     return $result;
   }
