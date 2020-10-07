@@ -233,6 +233,7 @@ function webform_paymethod_select_form_webform_client_form_alter(&$form, &$form_
     $parents = $componentObj->parents($webform);
     $element = &drupal_array_get_nested_value($form['submitted'], $parents);
     $componentObj->render($element, $form, $form_state);
+    $form_state['cache'] = TRUE;
   }
 }
 
@@ -250,7 +251,11 @@ function webform_paymethod_select_form_submit($form, &$form_state) {
     return;
   }
   $page_num = $form_state['webform']['page_num'];
-  if (!empty($form_state['webform_paymethod_select']['pages'][$page_num])) {
+  $components = [];
+  foreach ($form_state['webform_paymethod_select']['pages'][$page_num] ?? [] as $cid) {
+    $components[$cid] = $form_state['webform_paymethod_select'][$cid];
+  }
+  if ($components) {
     $draft = !empty($form_state['save_draft']);
     $form_state['save_draft'] = TRUE;
     webform_client_form_submit($form, $form_state);
@@ -258,8 +263,7 @@ function webform_paymethod_select_form_submit($form, &$form_state) {
 
     $success = TRUE;
     $pending = TRUE;
-    foreach ($form_state['webform_paymethod_select']['pages'][$page_num] as $cid) {
-      $component = $form_state['webform_paymethod_select'][$cid];
+    foreach ($components as $component) {
       $component->submit($form, $form_state, $submission);
       $pending = $pending && $component->statusIsOneOf(PAYMENT_STATUS_PENDING, PAYMENT_STATUS_SUCCESS);
       $success = $success && $component->statusIsOneOf(PAYMENT_STATUS_SUCCESS);
