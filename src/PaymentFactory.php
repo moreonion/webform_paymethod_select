@@ -70,6 +70,7 @@ class PaymentFactory {
       $payment->setLineItem($line_item);
       $index++;
     }
+    drupal_alter('webform_paymethod_select_payment', $payment, $this->component, $submission);
   }
 
   /**
