@@ -260,7 +260,7 @@ function webform_paymethod_select_form_submit($form, &$form_state) {
     $form_state['save_draft'] = TRUE;
     foreach ($components as $cid => $component) {
       // Avoid saving the submitted payment data.
-      $form_state['values'][$cid] = $component->value();
+      $form_state['values']['submitted'][$cid] = $component->value();
     }
     webform_client_form_submit($form, $form_state);
     $submission = Submission::load($form['#node']->nid, $form_state['values']['details']['sid']);
