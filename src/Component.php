@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_paymethod_select;
 
+use Drupal\little_helpers\Webform\Submission;
 use Drupal\little_helpers\Webform\Webform;
 
 /**
@@ -316,19 +317,13 @@ class Component {
       $payment->setStatus(new \PaymentStatusItem(PAYMENT_STATUS_NEW));
     }
     entity_save('payment', $payment);
-
-    // Set component value to the pid - we don't save any payment data.
-    $node = $submission->webform->node;
-    db_query(
-      "UPDATE {webform_submitted_data} SET data=:pid WHERE nid=:nid AND cid=:cid AND sid=:sid",
-      [
-        ':nid' => $node->nid,
-        ':cid' => $this->component['cid'],
-        ':sid' => $submission->sid,
-        ':pid' => $payment->pid,
-      ]
-    );
-    $form_state['values']['submitted'][$this->component['cid']] = array($payment->pid);
+    $form_state['values']['submitted'][$this->component['cid']] = $this->value();
+    db_update('webform_submitted_data')
+      ->condition('nid', $submission->nid)
+      ->condition('sid', $submission->sid)
+      ->condition('cid', $this->component['cid'])
+      ->fields(['data' => $payment->pid])
+      ->execute();
 
     // Execute the payment.
     $payment->execute();
@@ -356,14 +351,30 @@ class Component {
   /**
    * Execute a controller specific AJAX callback.
    */
-  public function executeAjaxCallback(\PaymentMethod $method, $form, &$form_state) {
+  public function executeAjaxCallback(\PaymentMethod $method, &$form, &$form_state) {
     $payment = $this->payment;
     $payment->method = $method;
     $result = $method->controller->ajaxCallback($payment);
     if (!empty($payment->pid)) {
-      $form_state['values']['submitted'][$this->component['cid']] = [$payment->pid];
+      $form_state['values']['submitted'][$this->component['cid']] = $this->value();
+      if (empty($form_state['values']['details']['sid'] ?? NULL)) {
+        $node = $form['#node'];
+        $submission = webform_submission_create($node, $GLOBALS['user'], $form_state);
+        $submission->is_draft = TRUE;
+        $submission->highest_valid_page = $this->component['page_num'] - 1;
+        $form['details']['sid']['#value'] = $sid = webform_submission_insert($node, $submission);
+        $payment->contextObj = new WebformPaymentContext(new Submission($node, $submission), $form_state, $this->component);
+        entity_save('payment', $payment);
+      }
     }
     return $result;
+  }
+
+  /**
+   * Get the component’s value for saving in the submission.
+   */
+  public function value() {
+    return $this->payment->pid ? [$this->payment->pid] : [];
   }
 
 }
