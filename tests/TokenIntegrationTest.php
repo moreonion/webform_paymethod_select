@@ -12,7 +12,7 @@ class TokenIntegrationTest extends DrupalUnitTestCase {
   /**
    * Prepare a test node.
    */
-  public function setUp() {
+  public function setUp() : void {
     parent::setUp();
     module_load_include('components.inc', 'webform', 'includes/webform');
     module_load_include('submissions.inc', 'webform', 'includes/webform');
@@ -73,7 +73,7 @@ class TokenIntegrationTest extends DrupalUnitTestCase {
   /**
    * Remove the test node.
    */
-  public function tearDown() {
+  public function tearDown() : void {
     entity_delete('payment', $this->payment->pid);
     entity_delete('payment_method', $this->method->pmid);
     node_delete($this->node->nid);

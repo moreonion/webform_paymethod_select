@@ -13,7 +13,7 @@ class ComponentTest extends DrupalUnitTestCase {
   /**
    * Create a test node.
    */
-  public function setUp() {
+  public function setUp() : void {
     parent::setUp();
     module_load_include('inc', 'webform', 'includes/webform.components');
     module_load_include('inc', 'webform', 'includes/webform.submissions');
@@ -40,7 +40,7 @@ class ComponentTest extends DrupalUnitTestCase {
   /**
    * Delete the test node.
    */
-  public function tearDown() {
+  public function tearDown() : void {
     node_delete($this->node->nid);
     if ($this->payment) {
       entity_delete('payment', $this->payment->pid);
