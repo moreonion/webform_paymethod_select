@@ -71,6 +71,8 @@ class ComponentTest extends DrupalUnitTestCase {
     $form = ['#node' => $this->node];
     $form_state = [];
     $component->render($element, $form, $form_state);
+    $form_state['storage']['page_num'] = 1;
+    $form_state['storage']['submitted'] = [];
     $component->executeAjaxCallback($method, $form, $form_state);
 
     // The $submission->sid is in the right place to be found in the following
@@ -85,6 +87,28 @@ class ComponentTest extends DrupalUnitTestCase {
       'sid' => $form['details']['sid']['#value'],
       'cid' => 1,
     ], $payment->contextObj->toContextData());
+  }
+
+  /**
+   * Test invoking the AJAX callback with a form state on the wrong page.
+   */
+  public function testAjaxCallbackOnWrongPage() {
+    $controller = $this->getMockBuilder(\PaymentMethodController::class)->getMock();
+    $controller->expects($this->never())->method($this->anything());
+    $method = entity_create('payment_method', [
+      'controller' => $controller,
+    ]);
+    $component = new Component($this->node->webform['components'][1]);
+    $form = ['#node' => $this->node];
+    $form_state['storage']['page_num'] = 2;
+    $element = webform_component_invoke('paymethod_select', 'render', $this->node->webform['components'][1]);
+    $component->render($element, $form, $form_state);
+    $result = $component->executeAjaxCallback($method, $form, $form_state);
+    $this->assertEqual([
+      'code' => 400,
+      'error' => 'Invalid form state.',
+    ], $result);
+    $this->assertEmpty($form['details']['sid']['#value'] ?? NULL);
   }
 
 }

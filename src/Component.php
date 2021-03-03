@@ -352,12 +352,19 @@ class Component {
    * Execute a controller specific AJAX callback.
    */
   public function executeAjaxCallback(\PaymentMethod $method, &$form, &$form_state) {
+    if (($form_state['storage']['page_num'] ?? 0) !== $this->component['page_num']) {
+      // The webform is not on the correct step. Is this a forged request?
+      $result['code'] = 400;
+      $result['error'] = 'Invalid form state.';
+      return $result;
+    }
     $payment = $this->payment;
     $payment->method = $method;
     $result = $method->controller->ajaxCallback($payment);
     if (!empty($payment->pid)) {
+      $form_state['values']['submitted'] = $form_state['storage']['submitted'];
       $form_state['values']['submitted'][$this->component['cid']] = $this->value();
-      if (empty($form_state['values']['details']['sid'] ?? NULL)) {
+      if (!($form['details']['sid']['#value'] ?? NULL)) {
         $node = $form['#node'];
         $submission = webform_submission_create($node, $GLOBALS['user'], $form_state);
         $submission->is_draft = TRUE;
