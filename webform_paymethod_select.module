@@ -33,13 +33,24 @@ function webform_paymethod_select_menu() {
   ];
   $items['webform-paymethod-select/ajax/%/%entity_object'] = [
     'page callback' => 'webform_paymethod_select_method_callback',
-    'delivery callback' => 'little_helpers_deliver_json',
+    'delivery callback' => 'webform_paymethod_select_deliver_json',
     'access arguments' => ['access content'],
     'page arguments' => [2, 3],
     'load arguments' => ['payment_method'],
     'type' => MENU_CALLBACK,
   ];
   return $items;
+}
+
+/**
+ * Delivery callback: Handle JSON results.
+ */
+function webform_paymethod_select_deliver_json($result) {
+  $codes[400] = 'Bad Request';
+  if (($code = $result['code'] ?? NULL) && isset($codes[$code])) {
+    drupal_add_http_header('Status', "$code {$codes[$code]}");
+  }
+  return little_helpers_deliver_json($result);
 }
 
 /**

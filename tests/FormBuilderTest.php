@@ -13,7 +13,7 @@ class FormBuilderTest extends DrupalUnitTestCase {
   /**
    * Prepare a test node.
    */
-  public function setUp() {
+  public function setUp() : void {
     parent::setUp();
     $controller = payment_method_controller_load(wps_test_method_payment_method_controller_info()[0]);
     $method = entity_create('payment_method', ['controller' => $controller]);
@@ -45,7 +45,7 @@ class FormBuilderTest extends DrupalUnitTestCase {
   /**
    * Remove the test node.
    */
-  public function tearDown() {
+  public function tearDown() : void {
     entity_delete('payment_method', $this->method->pmid);
     node_delete($this->node->nid);
     parent::tearDown();

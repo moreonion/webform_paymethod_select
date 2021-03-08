@@ -13,7 +13,7 @@ class FormTest extends DrupalUnitTestCase {
   /**
    * Create a test node.
    */
-  public function setUp() {
+  public function setUp() : void {
     parent::setUp();
     module_load_include('inc', 'webform', 'includes/webform.components');
     $node = (object) [
@@ -40,7 +40,7 @@ class FormTest extends DrupalUnitTestCase {
   /**
    * Delete the test node.
    */
-  public function tearDown() {
+  public function tearDown() : void {
     node_delete($this->node->nid);
     parent::tearDown();
   }

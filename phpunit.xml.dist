@@ -1,8 +1,6 @@
 <!-- Copy and rename to phpunit.xml. Customize as needed. -->
 <phpunit backupGlobals="false"
-    backupStaticAttributes="false"
-    syntaxCheck="false"
-    strict="true">
+    backupStaticAttributes="false">
 
 <filter>
   <whitelist processUncoveredFilesFromWhitelist="true" addUncoveredFilesFromWhitelist="true">
@@ -19,6 +17,7 @@
       <directory suffix=".features.filter.inc">.</directory>
       <directory suffix=".features.taxonomy.inc">.</directory>
       <directory suffix=".features.uuid_term.inc">.</directory>
+      <directory suffix=".field_group.inc">.</directory>
       <directory suffix=".strongarm.inc">.</directory>
     </exclude>
   </whitelist>
