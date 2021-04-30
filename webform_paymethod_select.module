@@ -365,15 +365,6 @@ function webform_paymethod_select_node_presave($node) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
- * Implements hook_form_form_builder_webform_save_form_alter().
- */
-function webform_paymethod_select_form_form_builder_webform_save_form_alter(&$form, &$form_state) {
-  $form['#attached']['js'][] = 'misc/ajax.js';
-  $form['#attached']['js'][] = 'misc/states.js';
-}
-
-/**
  * Implements hook_webform_submission_load().
  *
  * Add payment objects to their submissions. The objects will be accessible
