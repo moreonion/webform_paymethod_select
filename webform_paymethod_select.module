@@ -477,8 +477,42 @@ function webform_paymethod_select_webform_results_download_submission_informatio
 
 /**
  * Implements hook_webform_results_download_submission_information_data().
+ *
+ * This is a hook implementation compatible with webform with plain webform and
+ * the patch from #2117285.
  */
-function webform_paymethod_select_webform_results_download_submission_information_data($submission, array $options, $serial_start, $row_count) {
+function webform_paymethod_select_webform_results_download_submission_information_data() {
+  $args = func_get_args();
+  $fn = __FUNCTION__;
+  $has_token_as_first_argument = is_string($args[0]);
+  $impl = $has_token_as_first_argument ? "_{$fn}" : "{$fn}_row";
+  return call_user_func_array($impl, $args);
+}
+
+/**
+ * Implements hook_webform_results_download_submission_information_data().
+ *
+ * This is only used without the patch from #3086038.
+ */
+function _webform_paymethod_select_webform_results_download_submission_information_data($token, $submission, array $options, $serial_start, $row_count) {
+  $data = array();
+  if (substr($token, 0, 8) !== 'payment_' || empty($submission->payments)) {
+    return $data;
+  }
+  if (!isset($submission->_payment_columns)) {
+    $submission->_payment_columns = webform_paymethod_select_webform_results_download_submission_information_data_row($submission, $options, $serial_start, $row_count);
+  }
+  return isset($submission->_payment_columns[$token]) ? $submission->_payment_columns[$token] : NULL;
+}
+
+/**
+ * Implements hook_webform_results_download_submission_information_data_row().
+ *
+ * This hook is invoked directly if
+ * @link https://www.drupal.org/project/webform/issues/3086038 #3086038 @endlink
+ * is applied.
+ */
+function webform_paymethod_select_webform_results_download_submission_information_data_row($submission, array $options, $serial_start, $row_count) {
   $data = array();
   if (empty($submission->payments)) {
     return $data;
@@ -489,13 +523,22 @@ function webform_paymethod_select_webform_results_download_submission_informatio
       continue;
     }
     $pfx = $single_cid ? 'payment_' : "payment_{$cid}_";
-    $data[$pfx . 'pid'] = $payment->pid;
-    $data[$pfx . 'method'] = $payment->method->title_specific;
-    $data[$pfx . 'status'] = $payment->getStatus()->status;
-    if (webform_paymethod_select_implements_data_interface($payment->method->controller)) {
-      foreach ($payment->method->controller->webformData($payment) as $key => $v) {
-        $data[$pfx . $key] = $v;
-      }
+    $data += _webform_paymethod_select_webform_payment_csv_data($pfx, $payment);
+  }
+  return $data;
+}
+
+/**
+ * Helper function that generates CSV cells for a single payment.
+ */
+function _webform_paymethod_select_webform_payment_csv_data($pfx, \Payment $payment) {
+  $data = [];
+  $data[$pfx . 'pid'] = $payment->pid;
+  $data[$pfx . 'method'] = $payment->method->title_specific;
+  $data[$pfx . 'status'] = $payment->getStatus()->status;
+  if (webform_paymethod_select_implements_data_interface($payment->method->controller)) {
+    foreach ($payment->method->controller->webformData($payment) as $key => $v) {
+      $data[$pfx . $key] = $v;
     }
   }
   return $data;
