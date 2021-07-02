@@ -478,18 +478,21 @@ function webform_paymethod_select_webform_results_download_submission_informatio
 /**
  * Implements hook_webform_results_download_submission_information_data().
  *
- * This is a hook implementation compatible with webform without #3086038.
+ * This is a hook implementation compatible with webform with plain webform and
+ * the patch from #2117285.
  */
 function webform_paymethod_select_webform_results_download_submission_information_data() {
   $args = func_get_args();
   $fn = __FUNCTION__;
-  // Do we have a patched version of webform?
-  $impl = is_string($args[0]) ? "_{$fn}" : "{$fn}_row";
+  $has_token_as_first_argument = is_string($args[0]);
+  $impl = $has_token_as_first_argument ? "_{$fn}" : "{$fn}_row";
   return call_user_func_array($impl, $args);
 }
 
 /**
- * Get a single value for a CSV export.
+ * Implements hook_webform_results_download_submission_information_data().
+ *
+ * This is only used without the patch from #3086038.
  */
 function _webform_paymethod_select_webform_results_download_submission_information_data($token, $submission, array $options, $serial_start, $row_count) {
   $data = array();
