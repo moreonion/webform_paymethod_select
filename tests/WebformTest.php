@@ -43,22 +43,6 @@ class WebformTest extends DrupalUnitTestCase {
   }
 
   /**
-   * Test getting the submission data with the patch from #2117285.
-   *
-   * @link https://www.drupal.org/node/2117285 #2117285 @endlink
-   */
-  public function testSubmissionDataWith2117285() {
-    $submission = (object) ['payments' => []];
-    $submission->payments[$cid = 3] = $this->paymentStub();
-    $data = webform_paymethod_select_webform_results_download_submission_information_data($submission, [], 0, 1);
-    $this->assertEqual([
-      'payment_pid' => 42,
-      'payment_method' => 'Test method',
-      'payment_status' => 'payment_status_new',
-    ], $data);
-  }
-
-  /**
    * Test getting the submission data with the patch from #3086038.
    *
    * @link https://www.drupal.org/node/3086038 #3086038 @endlink
