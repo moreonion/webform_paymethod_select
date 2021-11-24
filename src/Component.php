@@ -111,6 +111,9 @@ class Component {
           $method->validate($this->payment, TRUE);
         }
         catch (\PaymentValidationException $e) {
+          $vars['%method'] = $method->controller->name;
+          $vars['%pmid'] = $method->pmid;
+          watchdog_exception('webform_paymethod_select', $e, 'Method %method (pmid: %pmid) excluded: !message', $vars, WATCHDOG_DEBUG);
           unset($methods[$pmid]);
         }
       }
