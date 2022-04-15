@@ -371,7 +371,7 @@ class Component {
     }
     $payment = $this->payment;
     $payment->method = $method;
-    $result = $method->controller->ajaxCallback($payment);
+    $result = $method->controller->ajaxCallback($payment, $form, $form_state);
     if (!empty($payment->pid)) {
       $form_state['values']['submitted'] = $form_state['storage']['submitted'] ?? [];
       $form_state['values']['submitted'][$this->component['cid']] = $this->value();
