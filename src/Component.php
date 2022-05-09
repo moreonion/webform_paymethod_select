@@ -140,17 +140,21 @@ class Component {
           '#payment-method-selector input' => array('value' => (string) $method->pmid),
         ),
       ),
+      // This flag is used to determine whether the payment method callback
+      // returns the (modified) wrapper or an otherwise empty form-API array.
+      '#_payment_method_form_wrapper_preserved' => TRUE,
     );
-    $js = drupal_get_path('module', 'webform_paymethod_select') . '/webform_paymethod_select.js';
-    $element['#attached']['js'][$js] = [
-      'scope' => 'footer',
-      'weight' => 21,
-    ];
 
     $form_elements_callback = $method->controller->payment_configuration_form_elements_callback;
     if (function_exists($form_elements_callback) == TRUE) {
       $form_state['payment'] = $payment;
-      $element += $form_elements_callback($element, $form_state);
+      $method_element = $form_elements_callback($element, $form_state);
+      if ($method_element['#_payment_method_form_wrapper_preserved'] ?? FALSE) {
+        $element = $method_element;
+      }
+      else {
+        $element = $method_element + $element;
+      }
       unset($form_state['payment']);
     }
     return $element;
@@ -223,6 +227,11 @@ class Component {
       '#element_validate' => array('webform_paymethod_select_component_element_validate'),
       '#cid' => $this->component['cid'],
     ) + $element;
+    $js = drupal_get_path('module', 'webform_paymethod_select') . '/webform_paymethod_select.js';
+    $element['#attached']['js'][$js] = [
+      'scope' => 'footer',
+      'weight' => 21,
+    ];
     $element['#wrapper_attributes']['class'][] = 'paymethod-select-wrapper';
     $element['payment_method_all_forms'] = array(
       '#type'        => 'container',
