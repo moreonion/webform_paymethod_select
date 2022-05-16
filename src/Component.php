@@ -371,7 +371,10 @@ class Component {
     }
     $payment = $this->payment;
     $payment->method = $method;
-    $result = $method->controller->ajaxCallback($payment, $form, $form_state);
+    $webform = new Webform($form['#node']);
+    $element = drupal_array_get_nested_value($form['submitted'], $this->parents($webform));
+    $element = $element['payment_method_all_forms'][$method->pmid];
+    $result = $method->controller->ajaxCallback($payment, $element, $form_state);
     if (!empty($payment->pid)) {
       $form_state['values']['submitted'] = $form_state['storage']['submitted'] ?? [];
       $form_state['values']['submitted'][$this->component['cid']] = $this->value();
