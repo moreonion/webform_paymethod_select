@@ -68,7 +68,10 @@ class ComponentTest extends DrupalUnitTestCase {
       'controller' => $controller,
     ]);
     $element = webform_component_invoke('paymethod_select', 'render', $this->node->webform['components'][1]);
-    $form = ['#node' => $this->node];
+    $form = [
+      '#node' => $this->node,
+      'submitted' => ['paymethod_select' => $element],
+    ];
     $form_state = [];
     $component->render($element, $form, $form_state);
     $form_state['storage']['page_num'] = 1;
@@ -99,9 +102,12 @@ class ComponentTest extends DrupalUnitTestCase {
       'controller' => $controller,
     ]);
     $component = new Component($this->node->webform['components'][1]);
-    $form = ['#node' => $this->node];
-    $form_state['storage']['page_num'] = 2;
     $element = webform_component_invoke('paymethod_select', 'render', $this->node->webform['components'][1]);
+    $form = [
+      '#node' => $this->node,
+      'submitted' => ['paymethod_select' => $element],
+    ];
+    $form_state['storage']['page_num'] = 2;
     $component->render($element, $form, $form_state);
     $result = $component->executeAjaxCallback($method, $form, $form_state);
     $this->assertEqual([

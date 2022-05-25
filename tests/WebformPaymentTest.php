@@ -76,7 +76,7 @@ class WebformPaymentTest extends DrupalUnitTestCase {
     $form = drupal_get_form('webform_client_form', $this->node, $submission);
     $this->assertEqual('webform_paymethod_select_error', $form['submitted']['paymethod_select']['error']['#theme']);
     $result = render($form['submitted']['paymethod_select']['error']);
-    $this->assertContains('"Failed"', $result);
+    $this->assertStringContainsString('"Failed"', $result);
   }
 
   /**
