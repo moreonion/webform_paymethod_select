@@ -131,4 +131,21 @@ class ComponentTest extends DrupalUnitTestCase {
     $this->assertEmpty($form['details']['sid']['#value'] ?? NULL);
   }
 
+  /**
+   * Test render with no methods available.
+   */
+  public function testRenderWithoutMethods() {
+    $this->node->webform['components'][1]['extra']['selected_payment_methods'] = [];
+    $component = new Component($this->node->webform['components'][1]);
+    $element = webform_component_invoke('paymethod_select', 'render', $this->node->webform['components'][1]);
+    $form = [
+      '#node' => $this->node,
+      'actions' => ['submit' => ['#type' => 'submit']],
+      'submitted' => ['paymethod_select' => $element],
+    ];
+    $form_state['storage']['page_num'] = 2;
+    $component->render($element, $form, $form_state);
+    $this->assertNotEmpty($form['actions']['submit']['#disabled']);
+  }
+
 }
