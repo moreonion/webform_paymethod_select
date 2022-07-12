@@ -111,6 +111,9 @@ class Component {
           $method->validate($this->payment, TRUE);
         }
         catch (\PaymentValidationException $e) {
+          $vars['%method'] = $method->controller->name;
+          $vars['%pmid'] = $method->pmid;
+          watchdog_exception('webform_paymethod_select', $e, 'Method %method (pmid: %pmid) excluded: !message', $vars, WATCHDOG_DEBUG);
           unset($methods[$pmid]);
         }
       }
@@ -284,8 +287,7 @@ class Component {
    */
   public function validate(array $element, array &$form_state) {
     $payment = $this->payment;
-    $values  = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
-    $pmid    = (int) $values['payment_method_selector'];
+    $pmid = (int) $element['payment_method_selector']['#value'];
 
     $payment->method = $method = entity_load_single('payment_method', $pmid);
     if ($payment->method->name === 'payment_method_unavailable') {
@@ -294,9 +296,8 @@ class Component {
 
     $method_validate_callback = $method->controller->payment_configuration_form_elements_callback . '_validate';
     if (function_exists($method_validate_callback)) {
-      $method_element = &$element['payment_method_all_forms'][$pmid];
       $form_state['payment'] = $payment;
-      $method_validate_callback($method_element, $form_state);
+      $method_validate_callback($element['payment_method_all_forms'][$pmid], $form_state);
       unset($form_state['payment']);
     }
   }
