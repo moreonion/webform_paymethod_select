@@ -166,6 +166,8 @@ Webform.prototype.getSelectedFieldsets = function() {
 }
 
 Webform.prototype.validate = function(submitter) {
+  var self = this;
+  self.jsValidation = false;
   if (Drupal.payment_handler) {
     this.getSelectedFieldsets().each(function() {
       var pmid = parseInt(this.dataset.pmid);
@@ -174,6 +176,7 @@ Webform.prototype.validate = function(submitter) {
         if (!ret) {
           submitter.need();
         }
+        self.jsValidation = true;
       }
     });
   }
