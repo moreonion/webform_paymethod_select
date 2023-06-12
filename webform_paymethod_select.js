@@ -73,10 +73,12 @@ Webform.prototype.bind = function() {
     self.showProgress();
     self.validate(new ExecuteOnceReady(
       self.submitFunction(),
-      function() { self.removeProgress(); },
+      function() {
+        self.removeProgress();
+        self.activeButton = null;
+      },
       null
     ));
-    self.activeButton = null;
   });
   if (this.$form.find('[name=webform_ajax_wrapper_id]').length > 0) {
     function beforeSubmit(form_values, $form, options) {
@@ -90,9 +92,11 @@ Webform.prototype.bind = function() {
       self.validate(new ExecuteOnceReady(
         self.ajaxSubmitFunction(options),
         null,
-        function() { self.removeProgress(); }
+        function() {
+          self.removeProgress();
+          self.activeButton = null;
+        }
       ));
-      self.activeButton = null;
       return false;
     }
     this.$form.find('.ajax-processed').each(function () {
