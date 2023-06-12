@@ -183,10 +183,18 @@ Webform.prototype.validate = function(submitter) {
   submitter.start();
 };
 
+Webform.prototype.showSuccess = function() {
+  if (this.jsValidation) {
+    $('<div class="messages status payment-success">' + Drupal.t('Payment succesful!') + '</div>')
+      .insertBefore(this.activeButton.closest('.form-actions') || this.activeButton);
+  }
+}
+
 Webform.prototype.submitFunction = function() {
   var self = this;
   var button = this.activeButton;
   return function() {
+    self.showSuccess();
     self.passSubmit = true;
     if (button) {
       // Create a temporary non-disabled clone of the button and click it.
@@ -203,6 +211,7 @@ Webform.prototype.submitFunction = function() {
 Webform.prototype.ajaxSubmitFunction = function(options) {
   var self = this;
   return function() {
+    self.showSuccess();
     self.passSubmit = true;
     self.$form.ajaxSubmit(options);
     self.passSubmit = false;
