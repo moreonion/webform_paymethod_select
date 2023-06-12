@@ -172,7 +172,7 @@ Webform.prototype.validate = function(submitter) {
     this.getSelectedFieldsets().each(function() {
       var pmid = parseInt(this.dataset.pmid);
       if (pmid in Drupal.payment_handler) {
-        var ret = Drupal.payment_handler[pmid](pmid, $(this), submitter);
+        var ret = Drupal.payment_handler[pmid](pmid, $(this), submitter, self);
         if (!ret) {
           submitter.need();
         }
@@ -183,9 +183,9 @@ Webform.prototype.validate = function(submitter) {
   submitter.start();
 };
 
-Webform.prototype.showSuccess = function() {
+Webform.prototype.showSuccess = function(message) {
   if (this.jsValidation) {
-    $('<div class="messages status payment-success">' + Drupal.t('Payment succesful!') + '</div>')
+    $('<div class="messages status payment-success">' + message + '</div>')
       .insertBefore(this.activeButton.closest('.form-actions') || this.activeButton);
   }
 }
@@ -194,7 +194,6 @@ Webform.prototype.submitFunction = function() {
   var self = this;
   var button = this.activeButton;
   return function() {
-    self.showSuccess();
     self.passSubmit = true;
     if (button) {
       // Create a temporary non-disabled clone of the button and click it.
@@ -211,7 +210,6 @@ Webform.prototype.submitFunction = function() {
 Webform.prototype.ajaxSubmitFunction = function(options) {
   var self = this;
   return function() {
-    self.showSuccess();
     self.passSubmit = true;
     self.$form.ajaxSubmit(options);
     self.passSubmit = false;

@@ -6,13 +6,13 @@ Drupal.behaviors.wps_test_method = {
       }
       var self = this;
       for (var pmid in settings.wps_test_method) {
-        Drupal.payment_handler[pmid] = function(pmid, $method, submitter) {
-          self.validateHandler(pmid, $method, submitter);
+        Drupal.payment_handler[pmid] = function(pmid, $method, submitter, paymethodSelect) {
+          self.validateHandler(pmid, $method, submitter, paymethodSelect);
         };
       }
     },
 
-    validateHandler: function(pmid, $method, submitter) {
+    validateHandler: function(pmid, $method, submitter, paymethodSelect) {
         this.form_id = $method.closest('form').attr('id');
 
         $('.mo-dialog-wrapper').addClass('visible');
@@ -33,6 +33,7 @@ Drupal.behaviors.wps_test_method = {
         setTimeout(function() {
           if (params.succeed) {
             submitter.ready();
+            paymethodSelect.showSuccess('JS validation was succesful.');
           }
           else {
             self.errorHandler('JS validation failed!');
