@@ -186,7 +186,7 @@ Webform.prototype.validate = function(submitter) {
 Webform.prototype.showSuccess = function(message) {
   if (this.jsValidation) {
     $('<div class="messages status payment-success">' + message + '</div>')
-      .insertBefore(this.activeButton.closest('.form-actions') || this.activeButton);
+      .insertAfter(this.$form.find('.paymethod-select-wrapper'));
   }
 }
 
