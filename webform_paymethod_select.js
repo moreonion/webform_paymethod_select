@@ -73,10 +73,12 @@ Webform.prototype.bind = function() {
     self.showProgress();
     self.validate(new ExecuteOnceReady(
       self.submitFunction(),
-      function() { self.removeProgress(); },
+      function() {
+        self.removeProgress();
+        self.activeButton = null;
+      },
       null
     ));
-    self.activeButton = null;
   });
   if (this.$form.find('[name=webform_ajax_wrapper_id]').length > 0) {
     function beforeSubmit(form_values, $form, options) {
@@ -90,9 +92,11 @@ Webform.prototype.bind = function() {
       self.validate(new ExecuteOnceReady(
         self.ajaxSubmitFunction(options),
         null,
-        function() { self.removeProgress(); }
+        function() {
+          self.removeProgress();
+          self.activeButton = null;
+        }
       ));
-      self.activeButton = null;
       return false;
     }
     this.$form.find('.ajax-processed').each(function () {
@@ -162,19 +166,29 @@ Webform.prototype.getSelectedFieldsets = function() {
 }
 
 Webform.prototype.validate = function(submitter) {
+  var self = this;
+  self.jsValidation = false;
   if (Drupal.payment_handler) {
     this.getSelectedFieldsets().each(function() {
       var pmid = parseInt(this.dataset.pmid);
       if (pmid in Drupal.payment_handler) {
-        var ret = Drupal.payment_handler[pmid](pmid, $(this), submitter);
+        var ret = Drupal.payment_handler[pmid](pmid, $(this), submitter, self);
         if (!ret) {
           submitter.need();
         }
+        self.jsValidation = true;
       }
     });
   }
   submitter.start();
 };
+
+Webform.prototype.showSuccess = function(message) {
+  if (this.jsValidation) {
+    $('<div class="messages status payment-success">' + message + '</div>')
+      .insertAfter(this.$form.find('.paymethod-select-wrapper'));
+  }
+}
 
 Webform.prototype.submitFunction = function() {
   var self = this;
